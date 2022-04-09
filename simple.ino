@@ -1,3 +1,5 @@
+// ESP32 internal dac out: Pin 25 / GND (500ohm, 10uF -> OUT+ / 500ohm, 0,1uF -> GND)
+
 #include "soc/rtc_wdt.h"
 
 void setup() {
