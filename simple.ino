@@ -22,6 +22,6 @@ void loop() {
   while (1) {
     int32_t gpio = REG_READ(GPIO_IN_REG);
     uint8_t value = (gpio >> 12);
-    dacWrite(25, value);
+    dacWrite(25, value); // ~34us? why so slow? output rate is only about 30kHz...
   }
 }
