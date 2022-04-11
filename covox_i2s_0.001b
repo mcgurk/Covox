@@ -83,7 +83,7 @@ void loop()
   uint32_t i = totalInterruptCounter;
   //portEXIT_CRITICAL(&timerMux);
   uint16_t c = i & 4095; // 0-4095
-  uint16_t b = sizeof(buf)/4; // frames per buffer
+  uint16_t b = sizeof(buf)/4; // bytes per buffer quarter
   uint32_t t1 = micros();
   if (c < 1024)
     i2s_write(i2s_num, &buf[2048], b, &bytesWritten, portMAX_DELAY);
