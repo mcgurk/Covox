@@ -3,11 +3,26 @@
 static const i2s_port_t i2s_num = I2S_NUM_0;
 
 uint32_t buf[16];
+uint8_t vbuf[16];
+uint32_t oldtime = 0, newtime = 0;
 
 volatile uint32_t totalInterruptCounter = 0;
-uint32_t totalSamplesPlayed = 0;
+volatile uint32_t totalSamplesPlayed = 0;
+volatile uint8_t fifo_idx = 0;
+volatile uint8_t fifofull = 0;
+
 #define FIFOFULL 22
 #define FIFOCLK 21
+
+void IRAM_ATTR isr_fifo() {
+  uint8_t value = (REG_READ(GPIO_IN_REG) >> 12);
+  buf[fifo_idx++] = (value<<24) | (value<<8);
+  if (fifo_idx > 15) {
+    digitalWrite(FIFOFULL, HIGH);
+    fifofull = 1;
+  }
+  totalInterruptCounter++;
+}
 
 static const i2s_config_t i2s_config = {
     .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_DAC_BUILT_IN),
@@ -25,7 +40,6 @@ static const i2s_config_t i2s_config = {
 
 //------------------------------------------------------------------------------------------------------------------------
 
-    
 void setup() {
   pinMode(12, INPUT); //LPT: 2 (D0)
   pinMode(13, INPUT); //     3 (D1)
@@ -48,37 +62,32 @@ void setup() {
   //i2s_set_pin(i2s_num, &pin_config);
   i2s_set_pin(i2s_num, NULL);
 
+  attachInterrupt(21, isr_fifo, RISING);
+
   Serial.println("setup():n loppu");
 }
 
+void loop() {
 
-void loop()
-{
+  // 1sample = 142,857us (7kHz), full buffer 1/7000*16 = 2,2857ms 
+
+  /*newtime = micros();
+  if ((newtime-oldtime)>1000000) {
+    Serial.print(micros()); Serial.print(" "); Serial.print(totalSamplesPlayed); Serial.print(" "); Serial.println(totalInterruptCounter);
+    totalSamplesPlayed = 0;
+    oldtime = newtime;
+  }*/
+
   size_t bytesWritten;
-  i2s_write(i2s_num, &buf, sizeof(buf), &bytesWritten, portMAX_DELAY);
-  digitalWrite(FIFOFULL, LOW);
-  //while(!digitalRead(FIFOCLK));
-  uint32_t t1 = micros();
-  for (uint8_t i = 0; i < 16; i++) {
-    while(digitalRead(FIFOCLK));
-    //if (digitalRead(FIFOCLK)==0) Serial.println(micros());
-    //Serial.println(digitalRead(FIFOCLK));
-    //delayMicroseconds(1);
-    uint8_t value = (REG_READ(GPIO_IN_REG) >> 12);
-    buf[i] = (value<<24) | (value<<8);
-    //Serial.println(digitalRead(FIFOCLK));
-    //delayMicroseconds(3);
-    //if (i != 15) while(!digitalRead(FIFOCLK));
-    //while(!digitalRead(FIFOCLK));
-    while(!digitalRead(FIFOCLK));
-  }
-  uint32_t t2 = micros();
-  digitalWrite(FIFOFULL, HIGH);
-  delayMicroseconds(2000); // 1/7000*16 = 0,0022857
-  //Serial.println(t2-t1);
-  //Serial.println((uint8_t)(buf[0] >> 8));
-  //Serial.print("t: "); Serial.print(t2-t1); Serial.print(" I-S: "); Serial.println(totalInterruptCounter-totalSamplesPlayed);
+  //i2s_write(i2s_num, &buf, idx*4, &bytesWritten, portMAX_DELAY);
+  delayMicroseconds(50);
+  if (fifo_idx) {
+    //i2s_write(i2s_num, &buf, 4*fifo_idx, &bytesWritten, portMAX_DELAY);
+    i2s_write(i2s_num, &buf, 4*fifo_idx, &bytesWritten, 100);
+    //if (fifofull) { delayMicroseconds(140); fifofull = 0; }
+    fifo_idx = 0;
+    //i2s_write(i2s_num, &buf[fifo_idx--], 4, &bytesWritten, portMAX_DELAY);
+    digitalWrite(FIFOFULL, LOW);
+  }  
 
-  /*uint8_t value = (REG_READ(GPIO_IN_REG) >> 12);
-  Serial.println(value);*/
 }
