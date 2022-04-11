@@ -74,8 +74,8 @@ void loop()
   }
   uint32_t t2 = micros();
   digitalWrite(FIFOFULL, HIGH);
-  //delayMicroseconds(500);
-  Serial.println(t2-t1);
+  delayMicroseconds(2000); // 1/7000*16 = 0,0022857
+  //Serial.println(t2-t1);
   //Serial.println((uint8_t)(buf[0] >> 8));
   //Serial.print("t: "); Serial.print(t2-t1); Serial.print(" I-S: "); Serial.println(totalInterruptCounter-totalSamplesPlayed);
 
