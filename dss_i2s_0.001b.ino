@@ -57,14 +57,20 @@ void loop()
   size_t bytesWritten;
   i2s_write(i2s_num, &buf, sizeof(buf), &bytesWritten, portMAX_DELAY);
   digitalWrite(FIFOFULL, LOW);
-  while(digitalRead(FIFOCLK));
+  //while(!digitalRead(FIFOCLK));
   uint32_t t1 = micros();
   for (uint8_t i = 0; i < 16; i++) {
-    while(!digitalRead(FIFOCLK));
+    while(digitalRead(FIFOCLK));
+    //if (digitalRead(FIFOCLK)==0) Serial.println(micros());
+    //Serial.println(digitalRead(FIFOCLK));
+    //delayMicroseconds(1);
     uint8_t value = (REG_READ(GPIO_IN_REG) >> 12);
     buf[i] = (value<<24) | (value<<8);
     //Serial.println(digitalRead(FIFOCLK));
-    delayMicroseconds(3);
+    //delayMicroseconds(3);
+    //if (i != 15) while(!digitalRead(FIFOCLK));
+    //while(!digitalRead(FIFOCLK));
+    while(!digitalRead(FIFOCLK));
   }
   uint32_t t2 = micros();
   digitalWrite(FIFOFULL, HIGH);
