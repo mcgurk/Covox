@@ -29,15 +29,15 @@ void IRAM_ATTR onTimer() {
 
 static const i2s_config_t i2s_config = {
     .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_DAC_BUILT_IN),
-    //.sample_rate = 44100,
     .sample_rate = 100000,
+    //.sample_rate = 7000,
     .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
     .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
     //.communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
     .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S_MSB),
-    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,       // high interrupt priority
-    .dma_buf_count = 4,                             // 8 buffers
-    .dma_buf_len = 512,                            // Number of frames for one-time sampling. The frame here means the total data from all the channels in a WS cycle
+    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,  // high interrupt priority
+    .dma_buf_count = 4,                        // 8 buffers
+    .dma_buf_len = 512,                        // Number of frames for one-time sampling. The frame here means the total data from all the channels in a WS cycle
     .use_apll = 0,
     .tx_desc_auto_clear = true,
     .fixed_mclk = -1    
@@ -66,8 +66,10 @@ void setup() {
   i2s_set_pin(i2s_num, NULL);
   
   timer = timerBegin(0, 80, true);  // 80 (using 80 as the prescaler value), we will get a signal with a 1 MHz frequency that will increment the timer counter 1 000 000 times per second.
+  //timer = timerBegin(0, 3, true);
   timerAttachInterrupt(timer, &onTimer, true);
-  timerAlarmWrite(timer, 10, true); // 25 -> 40kHz, 1MHz / 50 = 20kHz // 1MHz / 20 = 50kHz //1MHz / 100 = 10kHz? // 16 -> 62.5kHz
+  timerAlarmWrite(timer, 10, true); // 10 -> 100kHz
+  //timerAlarmWrite(timer, 3808, true);
   Serial.println("ennen timerin enablointia");
   timerAlarmEnable(timer);
   
