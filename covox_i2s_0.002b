@@ -59,9 +59,7 @@ void setup() {
   while(Serial.available());
   Serial.println("alku");
   
-  static QueueHandle_t i2s_event_queue;
   i2s_driver_install(i2s_num, &i2s_config, 0, NULL);
-  //i2s_driver_install(i2s_num, &i2s_config, 10, &i2s_event_queue);
   //i2s_set_pin(i2s_num, &pin_config);
   i2s_set_pin(i2s_num, NULL);
   
