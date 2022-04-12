@@ -11,23 +11,21 @@ portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 volatile uint32_t totalInterruptCounter = 0;
 volatile uint32_t totalFifoInterruptCounter = 0;
 volatile uint8_t buffer_full = 0;
-volatile uint16_t front = 0;
-volatile uint16_t back = 0;
-volatile uint8_t fifo_buf[65536];
+volatile uint8_t front = 0;
+volatile uint8_t back = 0;
+volatile uint8_t fifo_buf[256];
 uint32_t totalSamplesPlayed = 0;
-#define fsize ((uint16_t)(back-front)) // 0-16
+#define fsize ((uint8_t)(back-front)) // 0-16
 
 void IRAM_ATTR isr_fifo() {
-  //portENTER_CRITICAL_ISR(&timerMux);
-  //delayMicroseconds(1);
   if (fsize < 16) fifo_buf[back++] = (REG_READ(GPIO_IN_REG) >> 12);
   if (fsize > 15) digitalWrite(FIFOFULL, HIGH);
   totalFifoInterruptCounter++;
+  //portENTER_CRITICAL_ISR(&timerMux);
   //portEXIT_CRITICAL_ISR(&timerMux);
 }
 
 void IRAM_ATTR onTimer() {
-  //portENTER_CRITICAL_ISR(&timerMux);
   uint8_t s;
   if (fsize > 0) s = fifo_buf[front++]; else s = 128;
   if (fsize < 15) digitalWrite(FIFOFULL, LOW);
@@ -35,10 +33,7 @@ void IRAM_ATTR onTimer() {
   buf[i] = (s<<24) | (s<<8);
   if (i == 255) buffer_full = 1;
   if (i == 511) buffer_full = 2;
-  //portENTER_CRITICAL_ISR(&timerMux);
   totalInterruptCounter++;
-  //portEXIT_CRITICAL_ISR(&timerMux);
-  //portEXIT_CRITICAL_ISR(&timerMux);
 }
 
 static const i2s_config_t i2s_config = {
@@ -117,7 +112,7 @@ void loop() {
     //Serial.println(fsize);
     oldtime = newtime;
     //for (int i = 0; i < 100; i++) Serial.println((uint8_t)(buf[i] >> 8));
-    Serial.print(front); Serial.print(" "); Serial.println(back);
+    //Serial.print(front); Serial.print(" "); Serial.println(back);
   }
 
 }
