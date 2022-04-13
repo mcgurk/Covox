@@ -45,29 +45,6 @@ static const i2s_config_t i2s_config = {
     .fixed_mclk = -1    
 };
 
-volatile uint32_t samples_count = 0;
-
-void Task1code( void * parameter) {
-  /*String taskMessage = "Task running on core ";
-  taskMessage = taskMessage + xPortGetCoreID();
- 
-  while(true){
-    //Serial.println(taskMessage);
-    //delay(1000);
-    yield();
-  }*/
-  uint8_t old_sample = 128;
-  for(;;) {
-    uint8_t new_sample = (REG_READ(GPIO_IN_REG) >> 12);
-    if (old_sample != new_sample) {
-      samples_count++;
-      //delayMicroseconds(5);
-      old_sample = new_sample;
-    }
-    //yield();
-  }
-}
-
 //------------------------------------------------------------------------------------------------------------------------
 
 void setup() {
@@ -102,16 +79,6 @@ void setup() {
   Serial.println("before enabling timer");
   timerAlarmEnable(timer);
 
-  /*Serial.println("before creating task to another core");
-  xTaskCreatePinnedToCore(
-      Task1code, // Function to implement the task
-      "Task1", // Name of the task
-      10000,  // Stack size in words
-      NULL,  // Task input parameter
-      1,  // Priority of the task
-      &Task1,  // Task handle.
-      0); // Core where the task should run */
-      
   Serial.println("end of setup()");
 }
 
@@ -121,8 +88,8 @@ uint32_t oldintcount = 0, newintcount = 0;
 void loop() {
   if (buffer_full) {
     size_t bytesWritten;
-    if (buffer_full == 1) i2s_write(i2s_num, &buf[0], sizeof(buf)/2, &bytesWritten, portMAX_DELAY);
-    if (buffer_full == 2) i2s_write(i2s_num, &buf[512], sizeof(buf)/2, &bytesWritten, portMAX_DELAY);
+    if (buffer_full == 1) i2s_write(i2s_num, &buf[0], sizeof(buf)/2, &bytesWritten, 100);
+    if (buffer_full == 2) i2s_write(i2s_num, &buf[512], sizeof(buf)/2, &bytesWritten, 100);
     //i2s_write(i2s_num, &buf[0], sizeof(buf)/2, &bytesWritten, portMAX_DELAY);
     totalSamplesPlayed += bytesWritten/4;
     buffer_full = 0;
