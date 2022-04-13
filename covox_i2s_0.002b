@@ -10,9 +10,9 @@ volatile uint8_t buffer_full = 0;
 uint32_t totalSamplesPlayed = 0;
 
 void IRAM_ATTR onTimer() {
-  int8_t s1 = (REG_READ(GPIO_IN_REG) >> 12);
-  int8_t s2 = (REG_READ(GPIO_IN_REG) >> 12);
-  int8_t s3 = (REG_READ(GPIO_IN_REG) >> 12);
+  uint8_t s1 = (REG_READ(GPIO_IN_REG) >> 12);
+  uint8_t s2 = (REG_READ(GPIO_IN_REG) >> 12);
+  uint8_t s3 = (REG_READ(GPIO_IN_REG) >> 12);
   uint8_t value;
   if (s1 == s2) 
     value = s2;
