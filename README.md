@@ -4,6 +4,7 @@ Trying to make lpt soundcard Covox with microcontroller
 ## Wiring
 ESP32 | LPT (D25)
 --- | ---
+**Covox:** | 
 12 | 2 (data0)
 13 | 3 (data1)
 14 | 4 (data2)
