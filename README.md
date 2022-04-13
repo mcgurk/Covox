@@ -2,6 +2,9 @@
 Trying to make lpt soundcard Covox with microcontroller
 
 ## Wiring
+
+ESP32 DAC output: 25, GND
+
 ESP32 | LPT (D25)
 --- | ---
 **Covox:** | 
@@ -19,8 +22,6 @@ GND | GND (e.g. 25)
 22 | 10 (ACK) (DSS->PC)
 
 **Remember to do 5V->3.3V levelshifting! ESP32 is not 5V tolerant!**
-
-ESP32 DAC output: 25, GND
 
 # Misc stuff
 
