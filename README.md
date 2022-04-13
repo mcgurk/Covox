@@ -13,7 +13,8 @@ ESP32 | LPT (D25)
 18 | 8 (data6)
 19 | 9 (data7)
 GND | GND (e.g. 25)
-Remember to do 5V->3.3V levelshifting! ESP32 is not 5V tolerant!
+
+*Remember to do 5V->3.3V levelshifting! ESP32 is not 5V tolerant!*
 
 ESP32 DAC output: 25, GND
 
