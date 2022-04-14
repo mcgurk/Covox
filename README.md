@@ -7,7 +7,7 @@ ESP32 DAC output: 25, GND
 
 (to filter DC out put e.g. 10uF capacitor between 25 and out+. to filter noise put 500ohm resistor between 25 and 10uF capacitor and 0.1uF capacitor between 25 and gnd)
 
-(if signal is too high, make resistor divider with two resistor (e.g. 2k2ohm))
+(if signal is too high, make resistor divider with two resistor (e.g. 2kohm))
 
 ESP32 | LPT (D25)
 --- | ---
