@@ -5,7 +5,7 @@ Trying to make lpt soundcard Covox with microcontroller
 
 ESP32 DAC output: 25, GND
 
-(to filter DC out put e.g. 10uF capacitor between 25 and out+. to filter noise put 560ohm resistor between 25 and 10uF capacitor and 0.1uF capacitor between 560ohm and gnd)
+(to filter DC out put e.g. 10uF capacitor between 25 and out+. to filter noise put 560ohm resistor between 25 and 10uF capacitor and 0.01...0.1uF capacitor between 560ohm and gnd)
 
 (if signal is too high, make resistor divider with two resistor (e.g. 2kohm))
 
