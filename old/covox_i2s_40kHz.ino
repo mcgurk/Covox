@@ -104,7 +104,7 @@ void loop() {
   newintcount = totalInterruptCounter;
   if ( (newtime-oldtime) > 10000 ) {
     uint32_t ints = newintcount - oldintcount;
-    Serial.println(totalInterruptCounter-totalSamplesPlayed);
+    //Serial.println(totalInterruptCounter-totalSamplesPlayed);
     oldtime = newtime;
     oldintcount = newintcount;
   }
