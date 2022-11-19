@@ -1,7 +1,9 @@
 # Covox
 Trying to make lpt soundcard Covox with microcontroller
 
-Amplifier: PAM8302
+## Parts
+
+- Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302
 
 ## Wiring
 
@@ -27,6 +29,11 @@ GND | GND (e.g. 25)
 **DSS:** | 
 21 | 17 (Select Printer_) (PC->DSS)
 22 | 10 (ACK) (DSS->PC)
+**Amplifier:** |
+5V | 2-5VDD
+GND | Ground
+IO25 | 	Audio In-
+IO26 | Audio In+
 
 **Remember to do 5V->3.3V levelshifting! ESP32 is not 5V tolerant!**
 
@@ -50,4 +57,4 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - Commander Keen Dreams doesn't detect this DSS. Why?
 - DSS support: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
 - Covox support: https://www.mobygames.com/attribute/sheet/attributeId,43/p,2/
-- https://www.adafruit.com/product/2130
+- Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
