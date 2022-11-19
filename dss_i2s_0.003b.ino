@@ -15,7 +15,8 @@ volatile uint8_t back = 0;
 #define fsize ((uint8_t)(back-front)) // 0-16
 
 void IRAM_ATTR isr_fifo() {
-  if (fsize < 16) fifo_buf[(back++)&31] = (REG_READ(GPIO_IN_REG) >> 12); // if there is free space in buffer, read sample
+  uint8_t s = REG_READ(GPIO_IN_REG) >> 12; // read lpt-port state as quick as possible after interrupt is triggered
+  if (fsize < 16) fifo_buf[(back++)&31] = s; // if there is free space in buffer, put sample to buffer
   if (fsize == 16) digitalWrite(FIFOFULL, HIGH); // buffer is full, rise the full flag
   totalFifoInterruptCounter++;
 }
