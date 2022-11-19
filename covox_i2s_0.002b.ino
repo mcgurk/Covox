@@ -1,3 +1,5 @@
+// Arduino IDE 1.8.19, ESP32 1.0.6
+
 #include "driver/i2s.h"
 
 static const i2s_port_t i2s_num = I2S_NUM_0;
