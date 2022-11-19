@@ -23,7 +23,7 @@ void IRAM_ATTR isr_fifo() {
 
 void IRAM_ATTR onTimer() {
   uint8_t s;
-  if (fsize > 0) s = fifo_buf[(front++)&31]; else s = 128; // if fifo is empty, play silence (128/0x80)
+  if (fsize > 0) s = fifo_buf[(front++)&31]; else s = 0x80; // if fifo is empty, play silence (128/0x80)
   I2S.write(((uint16_t)s)<<8); // Right channel
   I2S.write(0x80<<8); // Left channel // "silence"
   totalTimerInterruptCounter++;
