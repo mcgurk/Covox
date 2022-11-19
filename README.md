@@ -56,6 +56,7 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - Disney Sound Source driver for Win3x, Win9x, WinNT 4: http://www.vogonsdrivers.com/getfile.php?fileid=1680&menustate=0
 - DSS Programmers Guide: https://archive.org/details/dss-programmers-guide/page/n1/mode/2up
 - Reversing the Disney Sound Source: https://www.vogons.org/viewtopic.php?f=62&t=42250&start=140
+- DIY DSS: https://www.vogons.org/viewtopic.php?p=474360#p474360
 
 ## Problems
 - Commander Keen Dreams doesn't detect this DSS. Why?
