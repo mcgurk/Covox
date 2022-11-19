@@ -10,12 +10,6 @@ Trying to make lpt soundcard Covox with microcontroller
 
 ## Wiring
 
-ESP32 DAC output: 25, GND
-
-(to filter DC out put e.g. 10uF capacitor between 25 and out+. to filter noise put 560ohm resistor between 25 and 10uF capacitor and 0.01...0.1uF capacitor between 560ohm and gnd)
-
-(if signal is too high, make resistor divider with two resistor (e.g. 2kohm))
-
 ESP32 | LPT (D25)
 --- | ---
 Differential audio out 25 & 26 | 
@@ -61,3 +55,11 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - DSS support: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
 - Covox support: https://www.mobygames.com/attribute/sheet/attributeId,43/p,2/
 - Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
+
+## Old garbage
+
+ESP32 DAC output: 25, GND
+
+(to filter DC out put e.g. 10uF capacitor between 25 and out+. to filter noise put 560ohm resistor between 25 and 10uF capacitor and 0.01...0.1uF capacitor between 560ohm and gnd)
+
+(if signal is too high, make resistor divider with two resistor (e.g. 2kohm))
