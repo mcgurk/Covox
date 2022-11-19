@@ -69,6 +69,11 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - doesn't detect
 - 33 sample interrupts comes
 
+## DosBox
+```
+[speaker]
+lpt_dac = disney, covox, ston1, (or none/off)
+```
 ## Old garbage
 
 ESP32 DAC output: 25, GND
