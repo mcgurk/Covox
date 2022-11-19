@@ -34,6 +34,7 @@ GND | GND (e.g. 25)
 
 ###
 ```
+// .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT
 buf[i] = (0x80<<24) | (s<<8); // IO25 = 0x80, IO26 = sample
 ```
 
