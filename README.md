@@ -52,6 +52,7 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - DSS support: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
 - Covox support: https://www.mobygames.com/attribute/sheet/attributeId,43/p,2/
 - Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
+- Miles Sound System (MSS) DSS patch: https://www.vogons.org/viewtopic.php?t=69539
 
 ## Problems
 - Commander Keen Dreams doesn't detect this DSS. Why?
