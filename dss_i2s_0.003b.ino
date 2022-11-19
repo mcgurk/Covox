@@ -56,7 +56,7 @@ void setup() {
   timer = timerBegin(0, 3, true); // 3 = prescaler
   timerAttachInterrupt(timer, &onTimer, true);
   timerAlarmWrite(timer, 3808, true);
-  // with prescaler 3 and count 3808 internal DAC buffer is syncronized with timer interrupt at 7kHz.
+  // with prescaler 3 and count 3808 internal DAC buffer is fully syncronized with timer interrupt at 7kHz.
   timerAlarmEnable(timer);
 
   // "The rising edge of the pulse on Pin 17 from the printer interface is used to clock data into the FIFO"
