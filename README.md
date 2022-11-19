@@ -3,7 +3,10 @@ Trying to make lpt soundcard Covox with microcontroller
 
 ## Parts
 
+- ESP32
+- 12 channel level shifter (min. 8 channel for covox)
 - Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302
+- Speaker (small shelf speaker is great choice)
 
 ## Wiring
 
