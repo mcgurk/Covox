@@ -4,28 +4,28 @@
 #define FIFOCLK 21
 
 hw_timer_t * timer = NULL;
-portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
-volatile uint32_t totalInterruptCounter = 0;
+
+volatile uint8_t fifo_buf[32];
+volatile uint32_t totalTimerInterruptCounter = 0;
 volatile uint32_t totalFifoInterruptCounter = 0;
-volatile uint8_t buffer_full = 0;
 volatile uint8_t front = 0;
 volatile uint8_t back = 0;
 #define fsize ((uint8_t)(back-front)) // 0-16
 
 void IRAM_ATTR isr_fifo() {
-  if (fsize < 16) fifo_buf[back++] = (REG_READ(GPIO_IN_REG) >> 12);
+  if (fsize < 16) fifo_buf[(back++)&31] = (REG_READ(GPIO_IN_REG) >> 12);
   if (fsize > 15) digitalWrite(FIFOFULL, HIGH);
   totalFifoInterruptCounter++;
 }
 
 void IRAM_ATTR onTimer() {
   uint8_t s;
-  if (fsize > 0) s = fifo_buf[front++]; else s = 128; // if fifo is empty, play silence (128/0x80)
+  if (fsize > 0) s = fifo_buf[(front++)&31]; else s = 128; // if fifo is empty, play silence (128/0x80)
   if (fsize < 15) digitalWrite(FIFOFULL, LOW);
   short sample = s<<8;
   I2S.write(sample); // Right channel
-  I2S.write( 0x80<<8 ); // Left channel // "silence"
-  totalInterruptCounter++;
+  I2S.write(0x80<<8); // Left channel // "silence"
+  totalTimerInterruptCounter++;
 }
 
 //------------------------------------------------------------------------------------------------------------------------
