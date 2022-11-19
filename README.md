@@ -39,3 +39,5 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 
 ## Problems
 - Commander Keen Dreams doesn't detect this DSS. Why?
+- DSS support: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
+- Covox support: https://www.mobygames.com/attribute/sheet/attributeId,43/p,2/
