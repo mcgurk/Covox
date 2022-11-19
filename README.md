@@ -54,6 +54,7 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
 - Miles Sound System (MSS) DSS patch: https://www.vogons.org/viewtopic.php?t=69539
 - Disney Sound Source driver for Win3x, Win9x, WinNT 4: http://www.vogonsdrivers.com/getfile.php?fileid=1680&menustate=0
+- DSS Programmers Guide: https://archive.org/details/dss-programmers-guide/page/n1/mode/2up
 
 ## Problems
 - Commander Keen Dreams doesn't detect this DSS. Why?
