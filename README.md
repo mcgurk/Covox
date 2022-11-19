@@ -49,12 +49,13 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 
 ## Links
 - https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
-
-## Problems
-- Commander Keen Dreams doesn't detect this DSS. Why?
 - DSS support: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
 - Covox support: https://www.mobygames.com/attribute/sheet/attributeId,43/p,2/
 - Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
+
+## Problems
+- Commander Keen Dreams doesn't detect this DSS. Why?
+- Reorganize pins. ESP32 doesn't boot cleanly when connected. Is IO14 and IO15 problem?
 
 ## Old garbage
 
