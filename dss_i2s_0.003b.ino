@@ -23,7 +23,7 @@ void IRAM_ATTR isr_fifo() {
 void IRAM_ATTR onTimer() {
   uint8_t s;
   if (fsize > 0) s = fifo_buf[(front++)&31]; else s = 128; // if fifo is empty, play silence (128/0x80)
-  if (fsize < 15) digitalWrite(FIFOFULL, LOW); // got one sample away from buffer so there is free space again, lower the full flag
+  if (fsize < 16) digitalWrite(FIFOFULL, LOW); // got one sample away from buffer so there is free space again, lower the full flag
   uint16_t sample = s<<8;
   I2S.write(sample); // Right channel
   I2S.write(0x80<<8); // Left channel // "silence"
