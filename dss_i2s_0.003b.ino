@@ -15,7 +15,7 @@ volatile uint8_t back = 0;
 #define fsize ((uint8_t)(back-front)) // 0-16
 
 void IRAM_ATTR isr_fifo() {
-  uint8_t s = REG_READ(GPIO_IN_REG) >> 12; // read lpt-port state as quick as possible after interrupt is triggered
+  uint8_t s = (REG_READ(GPIO_IN_REG) >> 12); // read lpt-port state as quick as possible after interrupt is triggered
   if (fsize < 16) fifo_buf[(back++)&31] = s; // if there is free space in buffer, put sample to buffer
   if (fsize == 16) digitalWrite(FIFOFULL, HIGH); // buffer is full, rise the full flag
   totalFifoInterruptCounter++;
@@ -24,8 +24,7 @@ void IRAM_ATTR isr_fifo() {
 void IRAM_ATTR onTimer() {
   uint8_t s;
   if (fsize > 0) s = fifo_buf[(front++)&31]; else s = 128; // if fifo is empty, play silence (128/0x80)
-  uint16_t sample = s<<8;
-  I2S.write(sample); // Right channel
+  I2S.write(((uint16_t)s)<<8); // Right channel
   I2S.write(0x80<<8); // Left channel // "silence"
   totalTimerInterruptCounter++;
   if (fsize < 16) digitalWrite(FIFOFULL, LOW); // if there is any free space in buffer, lower the full flag
