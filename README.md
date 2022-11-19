@@ -58,7 +58,7 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - Reorganize pins. ESP32 doesn't boot cleanly when connected. Is IO14 and IO15 problem?
 
 ## To do
-- Stereo in 1: https://www.pouet.net/prod.php?which=463#c173793 (LPT pin 1)
+- Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463#c173793 (LPT pin 1)
 
 ## Old garbage
 
