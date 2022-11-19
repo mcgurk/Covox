@@ -36,3 +36,6 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 
 ## Links
 - https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
+
+## Problems
+- Commander Keen Dreams doesn't detect this DSS. Why?
