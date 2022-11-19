@@ -65,6 +65,10 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 ## To do
 - Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463#c173793 (LPT pin 1)
 
+## KDreams
+- doesn't detect
+- 33 sample interrupts comes
+
 ## Old garbage
 
 ESP32 DAC output: 25, GND
