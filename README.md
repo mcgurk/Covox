@@ -57,6 +57,10 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - Commander Keen Dreams doesn't detect this DSS. Why?
 - Reorganize pins. ESP32 doesn't boot cleanly when connected. Is IO14 and IO15 problem?
 
+### DSS checks
+- Dungeon Master DSS detection: https://www.vogons.org/viewtopic.php?t=40751
+- Wolfenstein 3D writes 32 samples to FIFO and checks that FIFOFULL pin activates
+
 ## To do
 - Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463#c173793 (LPT pin 1)
 
