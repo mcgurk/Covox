@@ -1,3 +1,5 @@
+// ESP32 has DAC on GPIO pins 25 and 26
+
 #include <I2S.h>
 
 #define FIFOFULL 22
