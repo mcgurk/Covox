@@ -11,6 +11,7 @@ ESP32 DAC output: 25, GND
 
 ESP32 | LPT (D25)
 --- | ---
+Differential audio out 25 & 26 | 
 **Covox:** | 
 12 | 2 (data0)
 13 | 3 (data1)
