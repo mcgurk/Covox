@@ -14,22 +14,24 @@ ESP32 | LPT (D25)
 --- | ---
 Differential audio out 25 & 26 | 
 **Covox:** | 
-12 | 2 (data0)
-13 | 3 (data1)
-14 | 4 (data2)
-15 | 5 (data3)
-16 | 6 (data4)
-17 | 7 (data5)
-18 | 8 (data6)
-19 | 9 (data7)
+IO12 | 2 (data0)
+IO13 | 3 (data1)
+IO14 | 4 (data2)
+IO15 | 5 (data3)
+IO16 | 6 (data4)
+IO17 | 7 (data5)
+IO18 | 8 (data6)
+IO19 | 9 (data7)
 GND | GND (e.g. 25)
 **DSS:** | 
-21 | 17 (Select Printer_) (PC->DSS)
-22 | 10 (ACK) (DSS->PC)
+IO21 | 17 (Select Printer_) (PC->DSS)
+IO22 | 10 (ACK) (DSS->PC)
+**StereoIn1Covox:** | 
+? | 1 (Strobe_) (channel select PC->Covox)
 **Amplifier:** |
 5V | 2-5VDD
 GND | Ground
-IO25 | 	Audio In-
+IO25 | Audio In-
 IO26 | Audio In+
 
 **Remember to do 5V->3.3V levelshifting! ESP32 is not 5V tolerant!**
