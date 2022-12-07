@@ -1,3 +1,7 @@
+# NOTICE!
+At the moment (7.12.2022, newest ESP32 Adruino IDE 2.0.5) I cannot get internal DAC to work. Workaround: I use ESP32 Arduino IDE 1.0.6.
+
+
 # Covox
 Trying to make lpt soundcard Covox with microcontroller
 
