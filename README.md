@@ -1,5 +1,5 @@
 # NOTICE!
-At the moment (7.12.2022, newest ESP32 Adruino IDE 2.0.5) I cannot get internal DAC to work. Workaround: I use ESP32 Arduino IDE 1.0.6.
+At the moment (7.12.2022, newest ESP32 Adruino IDE board 2.0.5) I cannot get internal DAC to work. Workaround: I use ESP32 Arduino IDE board 1.0.6.
 
 
 # Covox
