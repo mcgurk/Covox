@@ -64,6 +64,7 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - Reversing the Disney Sound Source: https://www.vogons.org/viewtopic.php?f=62&t=42250&start=140
 - DIY DSS: https://www.vogons.org/viewtopic.php?p=474360#p474360
 - ESP32 DAC: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/dac.html
+- https://www.weigu.lu/microcontroller/tips_tricks/esp32_tips_tricks/index.html
 
 ## Problems
 - Commander Keen Dreams doesn't detect this DSS. Why?
