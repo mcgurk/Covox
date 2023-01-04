@@ -18,14 +18,14 @@ ESP32 | LPT (D25)
 --- | ---
 Differential audio out 25 & 26 | 
 **Covox:** | 
-IO12 | 2 (data0)
-IO13 | 3 (data1)
-IO14 | 4 (data2)
-IO15 | 5 (data3)
-IO16 | 6 (data4)
-IO17 | 7 (data5)
-IO18 | 8 (data6)
-IO19 | 9 (data7)
+IO12 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 2 (data0)
+IO13 ( $\colorbox{red}{{\color{red}{red}}}$ ) | 3 (data1)
+IO14 ( $\colorbox{orange}{{\color{orange}{orange}}}$ ) | 4 (data2)
+IO15 ( $\colorbox{yellow}{{\color{yellow}{yellow}}}$ ) | 5 (data3)
+IO16 ( $\colorbox{green}{{\color{green}{green}}}$ ) | 6 (data4)
+IO17 ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | 7 (data5)
+IO18 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 8 (data6)
+IO19 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 9 (data7)
 GND | GND (e.g. 25)
 **DSS:** | 
 IO21 | 17 (Select Printer_) (PC->DSS)
