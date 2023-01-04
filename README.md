@@ -18,14 +18,14 @@ ESP32 | LPT (D25)
 --- | ---
 Differential audio out 25 & 26 | 
 **Covox:** | 
-IO12 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 2 (data0)
-IO13 ( $\colorbox{red}{{\color{red}{red}}}$ ) | 3 (data1)
-IO14 ( $\colorbox{orange}{{\color{orange}{orange}}}$ ) | 4 (data2)
-IO15 ( $\colorbox{yellow}{{\color{yellow}{yellow}}}$ ) | 5 (data3)
-IO16 ( $\colorbox{green}{{\color{green}{green}}}$ ) | 6 (data4)
-IO17 ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | 7 (data5)
-IO18 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 8 (data6)
-IO19 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 9 (data7)
+IO16 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 2 (data0)
+IO17 ( $\colorbox{red}{{\color{red}{red}}}$ ) | 3 (data1)
+IO18 ( $\colorbox{orange}{{\color{orange}{orange}}}$ ) | 4 (data2)
+IO19 ( $\colorbox{yellow}{{\color{yellow}{yellow}}}$ ) | 5 (data3)
+IO4  ( $\colorbox{green}{{\color{green}{green}}}$ ) | 6 (data4)
+IO21 ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | 7 (data5)
+IO22 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 8 (data6)
+IO23 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 9 (data7)
 GND | GND (e.g. 25)
 **DSS:** | 
 IO21 | 17 (Select Printer_) (PC->DSS)
@@ -95,3 +95,5 @@ ESP32 DAC output: 25, GND
 (to filter DC out put e.g. 10uF capacitor between 25 and out+. to filter noise put 560ohm resistor between 25 and 10uF capacitor and 0.01...0.1uF capacitor between 560ohm and gnd)
 
 (if signal is too high, make resistor divider with two resistor (e.g. 2kohm))
+
+Old pinout was IO12..IO19
