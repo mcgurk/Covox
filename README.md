@@ -28,10 +28,10 @@ IO22 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 8 (data6)
 IO23 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 9 (data7)
 GND | GND (e.g. 25)
 **DSS:** | 
-IO21 | 17 (Select Printer_) (PC->DSS)
-IO22 | 10 (ACK) (DSS->PC)
+IO21 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 17 (Select Printer_) (PC->DSS)
+IO22 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 10 (ACK) (DSS->PC)
 **StereoIn1Covox:** | 
-? | 1 (Strobe_) (channel select PC->Covox)
+? ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 1 (Strobe_) (channel select PC->Covox)
 **Amplifier:** |
 5V | 2-5VDD
 GND | Ground
