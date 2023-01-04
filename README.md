@@ -45,7 +45,7 @@ IO26 | Audio In+
 ###
 ```
 // .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT
-buf[i] = (0x80<<24) | (s<<8); // IO25 = 0x80, IO26 = sample
+buf[i] = (0x80<<24) | (s<<8); // IO26 = 0x80, IO25 = sample
 ```
 
 #### ASM
