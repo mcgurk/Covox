@@ -55,6 +55,9 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 
 ## Links
 - https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
+- https://www.weigu.lu/microcontroller/tips_tricks/esp32_tips_tricks/index.html
+- https://www.mischianti.org/wp-content/uploads/2020/11/ESP32-DOIT-DEV-KIT-v1-pinout-mischianti.png
+- https://www.mischianti.org/wp-content/uploads/2021/07/ESP32-DEV-KIT-DevKitC-v4-pinout-mischianti.png
 - DSS support: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
 - Covox support: https://www.mobygames.com/attribute/sheet/attributeId,43/p,2/
 - Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
@@ -64,7 +67,6 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - Reversing the Disney Sound Source: https://www.vogons.org/viewtopic.php?f=62&t=42250&start=140
 - DIY DSS: https://www.vogons.org/viewtopic.php?p=474360#p474360
 - ESP32 DAC: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/dac.html
-- https://www.weigu.lu/microcontroller/tips_tricks/esp32_tips_tricks/index.html
 
 ## Problems
 - Commander Keen Dreams doesn't detect this DSS. Why?
