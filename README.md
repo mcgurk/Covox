@@ -29,10 +29,10 @@ IO23 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | L8-H8 | 9 (data7)
 GND | GND-GND | GND (e.g. 25)
 3.3V | LV-HV | 
 **DSS:** | 
-IO21 ( $\colorbox{white}{{\color{white}{white}}}$ ) | LV1-HV1 | 17 (Select Printer_) (PC->DSS)
-IO22 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | LV2-HV2 | 10 (ACK) (DSS->PC)
+IO35 ( $\colorbox{white}{{\color{white}{white}}}$ ) | LV1-HV1 | 17 (Select Printer_) (PC->DSS)
+IO32 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | LV2-HV2 | 10 (ACK) (DSS->PC)
 **StereoIn1Covox:** | 
-? ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | LV3-HV3 | 1 (Strobe_) (channel select PC->Covox)
+IO34 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | LV3-HV3 | 1 (Strobe_) (channel select PC->Covox)
 **Amplifier:** |
 5V | | 2-5VDD
 GND | | Ground
