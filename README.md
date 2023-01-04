@@ -14,29 +14,29 @@ Trying to make lpt soundcard Covox with microcontroller
 
 ## Wiring
 
-ESP32 | LPT (D25)
---- | ---
-Differential audio out 25 & 26 | 
-**Covox:** | 
-IO16 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 2 (data0)
-IO17 ( $\colorbox{red}{{\color{red}{red}}}$ ) | 3 (data1)
-IO18 ( $\colorbox{orange}{{\color{orange}{orange}}}$ ) | 4 (data2)
-IO19 ( $\colorbox{yellow}{{\color{yellow}{yellow}}}$ ) | 5 (data3)
-IO4  ( $\colorbox{green}{{\color{green}{green}}}$ ) | 6 (data4)
-IO21 ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | 7 (data5)
-IO22 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 8 (data6)
-IO23 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 9 (data7)
+ESP32 | level shifter | LPT (D25)
+--- | --- | ---
+Differential audio out 25 & 26 | |
+**Covox:** | |
+IO16 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | L1 | 2 (data0)
+IO17 ( $\colorbox{red}{{\color{red}{red}}}$ ) | L2 | 3 (data1)
+IO18 ( $\colorbox{orange}{{\color{orange}{orange}}}$ ) | L3 | 4 (data2)
+IO19 ( $\colorbox{yellow}{{\color{yellow}{yellow}}}$ ) | L4 | 5 (data3)
+IO4  ( $\colorbox{green}{{\color{green}{green}}}$ ) | L5 | 6 (data4)
+IO21 ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | L6 | 7 (data5)
+IO22 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | L7 | 8 (data6)
+IO23 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | L8 | 9 (data7)
 GND | GND (e.g. 25)
 **DSS:** | 
-IO21 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 17 (Select Printer_) (PC->DSS)
-IO22 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 10 (ACK) (DSS->PC)
+IO21 ( $\colorbox{white}{{\color{white}{white}}}$ ) | LV1 | 17 (Select Printer_) (PC->DSS)
+IO22 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | LV2 | 10 (ACK) (DSS->PC)
 **StereoIn1Covox:** | 
-? ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 1 (Strobe_) (channel select PC->Covox)
+? ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | LV3 | 1 (Strobe_) (channel select PC->Covox)
 **Amplifier:** |
-5V | 2-5VDD
-GND | Ground
-IO25 | Audio In-
-IO26 | Audio In+
+5V | | 2-5VDD
+GND | | Ground
+IO25 | | Audio In-
+IO26 | | Audio In+
 
 **Remember to do 5V->3.3V levelshifting! ESP32 is not 5V tolerant!**
 
