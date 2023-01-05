@@ -1,6 +1,3 @@
-# NOTICE!
-At the moment (7.12.2022, newest ESP32 Adruino IDE board 2.0.5) I cannot get internal DAC to work. Workaround: I use ESP32 Arduino IDE board 1.0.6.
-
 
 # Covox
 Trying to make lpt soundcard Covox with microcontroller
@@ -59,19 +56,25 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - https://www.weigu.lu/microcontroller/tips_tricks/esp32_tips_tricks/index.html
 - https://www.mischianti.org/wp-content/uploads/2020/11/ESP32-DOIT-DEV-KIT-v1-pinout-mischianti.png
 - https://www.mischianti.org/wp-content/uploads/2021/07/ESP32-DEV-KIT-DevKitC-v4-pinout-mischianti.png
-- DSS support: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
 - Covox support: https://www.mobygames.com/attribute/sheet/attributeId,43/p,2/
 - Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
-- Miles Sound System (MSS) DSS patch: https://www.vogons.org/viewtopic.php?t=69539
-- Disney Sound Source driver for Win3x, Win9x, WinNT 4: http://www.vogonsdrivers.com/getfile.php?fileid=1680&menustate=0
-- DSS Programmers Guide: https://archive.org/details/dss-programmers-guide/page/n1/mode/2up
-- Reversing the Disney Sound Source: https://www.vogons.org/viewtopic.php?f=62&t=42250&start=140
-- DIY DSS: https://www.vogons.org/viewtopic.php?p=474360#p474360
 - ESP32 DAC: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/dac.html
 
 ## Problems
 - Commander Keen Dreams doesn't detect this DSS. Why?
 - Reorganize pins. ESP32 doesn't boot cleanly when connected. Is IO14 and IO15 problem?
+
+## DSS (not possible without extra hardware)
+
+ESP32 speed is not enough for proper FIFO-buffer emulation.
+
+### Links
+- DSS support: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
+- Miles Sound System (MSS) DSS patch: https://www.vogons.org/viewtopic.php?t=69539
+- Disney Sound Source driver for Win3x, Win9x, WinNT 4: http://www.vogonsdrivers.com/getfile.php?fileid=1680&menustate=0
+- DSS Programmers Guide: https://archive.org/details/dss-programmers-guide/page/n1/mode/2up
+- Reversing the Disney Sound Source: https://www.vogons.org/viewtopic.php?f=62&t=42250&start=140
+- DIY DSS: https://www.vogons.org/viewtopic.php?p=474360#p474360
 
 ### DSS checks
 - Dungeon Master DSS detection: https://www.vogons.org/viewtopic.php?t=40751
@@ -98,3 +101,6 @@ ESP32 DAC output: 25, GND
 (if signal is too high, make resistor divider with two resistor (e.g. 2kohm))
 
 Old pinout was IO12..IO19
+
+NOTICE!
+At the moment (7.12.2022, newest ESP32 Adruino IDE board 2.0.5) I cannot get internal DAC to work. Workaround: I use ESP32 Arduino IDE board 1.0.6.
