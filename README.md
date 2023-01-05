@@ -76,7 +76,7 @@ lpt_dac = disney, covox, ston1, (or none/off)
 
 ESP32 speed is not enough for proper FIFO-buffer emulation.
 
-### Links
+#### Links
 - DSS support: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
 - Miles Sound System (MSS) DSS patch: https://www.vogons.org/viewtopic.php?t=69539
 - Disney Sound Source driver for Win3x, Win9x, WinNT 4: http://www.vogonsdrivers.com/getfile.php?fileid=1680&menustate=0
@@ -84,12 +84,12 @@ ESP32 speed is not enough for proper FIFO-buffer emulation.
 - Reversing the Disney Sound Source: https://www.vogons.org/viewtopic.php?f=62&t=42250&start=140
 - DIY DSS: https://www.vogons.org/viewtopic.php?p=474360#p474360
 
-### DSS checks
+#### DSS checks
 - Dungeon Master DSS detection: https://www.vogons.org/viewtopic.php?t=40751
 - Wolfenstein 3D writes 32 samples to FIFO and checks that FIFOFULL pin activates
 
 
-### KDreams
+#### KDreams
 - doesn't detect
 - 33 sample interrupts comes
 
