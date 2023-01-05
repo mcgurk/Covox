@@ -24,7 +24,7 @@ IO21 ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | L6-H6  | 7 (data5)
 IO22 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | L7-H7 | 8 (data6)
 IO23 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | L8-H8 | 9 (data7)
 GND | GND-GND | GND (e.g. 25)
-3.3V | LV-HV | 
+3.3V | LV-HV | ESP-board 5V?
 **DSS:** | 
 IO35 ( $\colorbox{white}{{\color{white}{white}}}$ ) | LV1-HV1 | 17 (Select Printer_) (PC->DSS)
 IO32 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | LV2-HV2 | 10 (ACK) (DSS->PC)
