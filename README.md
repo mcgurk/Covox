@@ -72,9 +72,12 @@ lpt_dac = disney, covox, ston1, (or none/off)
 - Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463#c173793 (LPT pin 1)
 
 
-## DSS (not possible without extra hardware)
+## Disney Sound Source / DSS (not possible without extra hardware)
 
 ESP32 speed is not enough for proper FIFO-buffer emulation.
+
+Do this:
+https://www.vogons.org/viewtopic.php?p=405296#p405296
 
 #### Links
 - DSS support: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
