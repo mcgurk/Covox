@@ -38,6 +38,15 @@ IO26 | | Audio In+
 
 **Remember to do 5V->3.3V levelshifting! ESP32 is not 5V tolerant!**
 
+## Links
+- https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
+- https://www.weigu.lu/microcontroller/tips_tricks/esp32_tips_tricks/index.html
+- https://www.mischianti.org/wp-content/uploads/2020/11/ESP32-DOIT-DEV-KIT-v1-pinout-mischianti.png
+- https://www.mischianti.org/wp-content/uploads/2021/07/ESP32-DEV-KIT-DevKitC-v4-pinout-mischianti.png
+- Covox support: https://www.mobygames.com/attribute/sheet/attributeId,43/p,2/
+- Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
+- ESP32 DAC: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/dac.html
+- 
 # Misc stuff
 
 ###
@@ -50,17 +59,6 @@ buf[i] = (0x80<<24) | (s<<8); // IO26 = 0x80, IO25 = sample
 ```
 C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc\1.22.0-97-gc752ad5-5.2.0\bin\xtensa-esp32-elf-objdump.exe -S C:\Users\lehti\AppData\Local\Temp\arduino_build_606462\esp32_dac_test2.ino.elf > c:\temp\koe.txt
 ```
-
-## Links
-- https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
-- https://www.weigu.lu/microcontroller/tips_tricks/esp32_tips_tricks/index.html
-- https://www.mischianti.org/wp-content/uploads/2020/11/ESP32-DOIT-DEV-KIT-v1-pinout-mischianti.png
-- https://www.mischianti.org/wp-content/uploads/2021/07/ESP32-DEV-KIT-DevKitC-v4-pinout-mischianti.png
-- Covox support: https://www.mobygames.com/attribute/sheet/attributeId,43/p,2/
-- Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
-- ESP32 DAC: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/dac.html
-
-
 
 ## DosBox
 ```
