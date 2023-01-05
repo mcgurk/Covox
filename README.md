@@ -60,9 +60,17 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 - Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
 - ESP32 DAC: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/dac.html
 
-## Problems
-- Commander Keen Dreams doesn't detect this DSS. Why?
-- Reorganize pins. ESP32 doesn't boot cleanly when connected. Is IO14 and IO15 problem?
+
+
+## DosBox
+```
+[speaker]
+lpt_dac = disney, covox, ston1, (or none/off)
+```
+
+## To do
+- Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463#c173793 (LPT pin 1)
+
 
 ## DSS (not possible without extra hardware)
 
@@ -80,18 +88,12 @@ ESP32 speed is not enough for proper FIFO-buffer emulation.
 - Dungeon Master DSS detection: https://www.vogons.org/viewtopic.php?t=40751
 - Wolfenstein 3D writes 32 samples to FIFO and checks that FIFOFULL pin activates
 
-## To do
-- Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463#c173793 (LPT pin 1)
 
-## KDreams
+### KDreams
 - doesn't detect
 - 33 sample interrupts comes
 
-## DosBox
-```
-[speaker]
-lpt_dac = disney, covox, ston1, (or none/off)
-```
+
 ## Old garbage
 
 ESP32 DAC output: 25, GND
@@ -104,3 +106,7 @@ Old pinout was IO12..IO19
 
 NOTICE!
 At the moment (7.12.2022, newest ESP32 Adruino IDE board 2.0.5) I cannot get internal DAC to work. Workaround: I use ESP32 Arduino IDE board 1.0.6.
+
+Problems
+Commander Keen Dreams doesn't detect this DSS. Why?
+Reorganize pins. ESP32 doesn't boot cleanly when connected. Is IO14 and IO15 problem?
