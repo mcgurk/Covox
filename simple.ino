@@ -3,14 +3,14 @@
 #include "soc/rtc_wdt.h"
 
 void setup() {
-  pinMode(12, INPUT); //LPT: 2 (D0)
-  pinMode(13, INPUT); //     3 (D1)
-  pinMode(14, INPUT); //     4 (D2)
-  pinMode(15, INPUT); //     5 (D3)
-  pinMode(16, INPUT); //     6 (D4)
-  pinMode(17, INPUT); //     7 (D5)
-  pinMode(18, INPUT); //     8 (D6)
-  pinMode(19, INPUT); //     9 (D7)
+  pinMode(16, INPUT); //LPT: 2 (D0)
+  pinMode(17, INPUT); //     3 (D1)
+  pinMode(18, INPUT); //     4 (D2)
+  pinMode(19, INPUT); //     5 (D3)
+  pinMode(4, INPUT); //      6 (D4)
+  pinMode(21, INPUT); //     7 (D5)
+  pinMode(22, INPUT); //     8 (D6)
+  pinMode(23, INPUT); //     9 (D7)
                       //     GND
 
   rtc_wdt_protect_off();
