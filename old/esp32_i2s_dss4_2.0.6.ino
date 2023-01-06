@@ -6,7 +6,7 @@
 #define FIFOCLK 35 // fifoclock, 17 (Select Printer_) (PC->DSS)
 
 hw_timer_t * timer = NULL;
-uint32_t buf[256];
+volatile uint8_t buf[256];
 uint32_t outbuf[512];
 volatile uint32_t totalTimerInterruptCounter = 0;
 volatile uint32_t totalFifoInterruptCounter = 0;
@@ -19,24 +19,36 @@ uint32_t totalSamplesPlayed = 0;
 #define fcnt ((uint8_t)(back-front)) // 0-16
 
 void IRAM_ATTR isr_fifo() {
+  if (fcnt == 15) digitalWrite(FIFOFULL, HIGH); // buffer will be full, rise the full flag
+  totalFifoInterruptCounter++;
+  if (fcnt == 16) return; // if full, return
+  uint32_t r = REG_READ(GPIO_IN_REG);
+  uint8_t s = (r >> 16) | (r & B10000);
+  fifo_buf[back++] = s; // put sample to buffer
+}
+
+static void core0_task(void *args) {
+  attachInterrupt(FIFOCLK, isr_fifo, RISING);
+  while (1) {
+    vTaskDelay(pdMS_TO_TICKS(500));
+  }
+}
+
+/*void IRAM_ATTR isr_fifo() {
   totalFifoInterruptCounter++;
   if (fcnt == 16) return; // if full, return
   uint32_t r = REG_READ(GPIO_IN_REG);
   uint8_t s = (r >> 16) | (r & B10000);
   fifo_buf[back++] = s; // put sample to buffer
   if (fcnt == 16) digitalWrite(FIFOFULL, HIGH); // buffer is full, rise the full flag
-}
+}*/
 
 void IRAM_ATTR onTimer() {
   uint8_t s;
   if (fcnt == 0) s = 0x80; else s = fifo_buf[front++]; // if fifo is empty, play silence (128/0x80)
-  digitalWrite(FIFOFULL, LOW); // there must be at least one free slot in fifo at this point */
+  digitalWrite(FIFOFULL, LOW); // there must be at least one free slot in fifo at this point
   uint16_t i = totalTimerInterruptCounter & 255;
-  uint32_t out = (0x80<<24) | (s<<8);
-  buf[i] = out;
-  //outbuf[i*4] = out; outbuf[i*4+1] = out; outbuf[i*4+2] = out; outbuf[i*4+3] = out;
-  //buf[i] = (0x80<<24) | (0x80<<8);
-  //buf[i] = (0x0<<24) | (0x0<<8);
+  buf[i] = s;
   if (i == 127) buffer_full = 1;
   if (i == 255) buffer_full = 2;
   totalTimerInterruptCounter++;
@@ -75,19 +87,17 @@ void setup() {
   while(Serial.available());
   Serial.println(); Serial.print("--- (compilation date: "); Serial.print(__DATE__); Serial.print(" "); Serial.print(__TIME__); Serial.println(") ---");
 
-  //for (int i=0; i<sizeof(fifo_buf); i++) { fifo_buf[i] = 0; buf[i] = 0; }
-
   i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
   i2s_set_dac_mode(I2S_DAC_CHANNEL_BOTH_EN);
 
-  timer = timerBegin(0, 3, true); // 3 = prescaler
+  timer = timerBegin(0, 4, true); // 4 = prescaler
   timerAttachInterrupt(timer, &onTimer, true);
-  timerAlarmWrite(timer, 3808, true);
-  // with prescaler 3 and count 3808 internal DAC buffer is fully syncronized with timer interrupt at 7kHz.
+  timerAlarmWrite(timer, 2856, true); //sampleja tulee ihan hitusen enemmän kuin mitä i2s ehtii syödä // 2857   4   7000.350017500875
   timerAlarmEnable(timer);
 
+  xTaskCreatePinnedToCore(core0_task, "core0_task", 4096, NULL, 5, NULL, 0);
   // "The rising edge of the pulse on Pin 17 from the printer interface is used to clock data into the FIFO"
-  attachInterrupt(FIFOCLK, isr_fifo, RISING);
+  //attachInterrupt(FIFOCLK, isr_fifo, RISING);
   
 }
 
@@ -99,31 +109,27 @@ void loop() {
   if (buffer_full) {
     size_t bytesWritten;
     if (buffer_full == 1) {
-      for (int i=0; i<128; i++) { uint32_t s = buf[i]; outbuf[i*4] = s; outbuf[i*4+1] = s; outbuf[i*4+2] = s; outbuf[i*4+3] = s; }
-      //i2s_write(I2S_NUM_0, &buf[0], sizeof(buf)/2, &bytesWritten, portMAX_DELAY);
-      i2s_write(I2S_NUM_0, &outbuf[0], sizeof(outbuf), &bytesWritten, portMAX_DELAY);
-      //i2s_write(I2S_NUM_0, &outbufptr[0], sizeof(outbuf)/2*4, &bytesWritten, portMAX_DELAY);
+      for (int i=0; i<128; i++) { uint32_t s = (0x80<<24) | (buf[i]<<8); outbuf[i*4] = s; outbuf[i*4+1] = s; outbuf[i*4+2] = s; outbuf[i*4+3] = s; }
+      //i2s_write(I2S_NUM_0, &outbuf[0], sizeof(outbuf), &bytesWritten, portMAX_DELAY);
+      i2s_write(I2S_NUM_0, &outbuf[0], sizeof(outbuf), &bytesWritten, 10);
     }
     if (buffer_full == 2) {
-      for (int i=0; i<128; i++) { uint32_t s = buf[i+128]; outbuf[i*4] = s; outbuf[i*4+1] = s; outbuf[i*4+2] = s; outbuf[i*4+3] = s; }
-      //i2s_write(I2S_NUM_0, &buf[128], sizeof(buf)/2, &bytesWritten, portMAX_DELAY);
-      i2s_write(I2S_NUM_0, &outbuf[0], sizeof(outbuf), &bytesWritten, portMAX_DELAY);
-      //i2s_write(I2S_NUM_0, &outbufptr[128*4], sizeof(outbuf)/2*4, &bytesWritten, portMAX_DELAY);
+      for (int i=0; i<128; i++) { uint32_t s = (0x80<<24) | (buf[i+128]<<8); outbuf[i*4] = s; outbuf[i*4+1] = s; outbuf[i*4+2] = s; outbuf[i*4+3] = s; }
+      //i2s_write(I2S_NUM_0, &outbuf[0], sizeof(outbuf), &bytesWritten, portMAX_DELAY);
+      i2s_write(I2S_NUM_0, &outbuf[0], sizeof(outbuf), &bytesWritten, 10);
     }
-    totalSamplesPlayed += bytesWritten/4/4;
+    totalSamplesPlayed += bytesWritten/4;
     buffer_full = 0;
-    //Serial.print(front); Serial.print(" "); Serial.println(back);
   }
 
   /*Serial.print(totalFifoInterruptCounter); Serial.print(" / "); Serial.print(samples_played); Serial.print(" / "); Serial.println(samples_not_played);
   for (int i=0; i<256; i++) { Serial.print(buf[i]); Serial.print(" "); } Serial.println();
   delay(1000);*/
 
-  /*newtime = micros();
+  newtime = micros();
   if ( (newtime-oldtime) > 50000 ) {
-    Serial.print(totalTimerInterruptCounter-totalSamplesPlayed); Serial.print(" / ");
-    Serial.println(totalFifoInterruptCounter);
+    Serial.print(totalTimerInterruptCounter*4-totalSamplesPlayed); Serial.print(" / "); Serial.println(totalFifoInterruptCounter);
     oldtime = newtime;
-  }*/
+  }
 
 }
