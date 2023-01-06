@@ -1,3 +1,5 @@
+// DOESN'T WORK FULLY! I THINK THAT ESP32 SPEED IS NOT ENOUGH FOR FIFO EMULATION!
+
 // Arduino IDE 2.0.3, ESP32 2.0.6 (based on ESP-IDF 4.4.3)
 
 #include "driver/i2s.h"
