@@ -40,6 +40,12 @@ static const i2s_config_t i2s_config_dac = {
     .fixed_mclk = -1
 };
 
+volatile uint32_t wscount;
+
+void IRAM_ATTR isr_ws() {
+  wscount++;
+}
+
 //static QueueHandle_t i2s_event_queue_dac;
 
 void setup() {
@@ -54,6 +60,8 @@ void setup() {
   //i2s_driver_install(I2S_NUM_0, &i2s_config_dac, 10, &i2s_event_queue_dac);
   i2s_set_dac_mode(I2S_DAC_CHANNEL_BOTH_EN);
   
+  attachInterrupt(I2S_WS, isr_ws, RISING);
+
 }
 
 void loop() {
@@ -78,7 +86,9 @@ void loop() {
   static uint32_t old_time, new_time;
   new_time = millis();
   if ( (new_time-old_time) > 1000 ) {
-    Serial.println(bytesread-byteswritten);
+    //Serial.println(bytesread-byteswritten);
+    Serial.println(bytesread-(wscount*4));
+    //Serial.println(wscount);
     old_time = new_time;
   }
 }
