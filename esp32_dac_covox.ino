@@ -9,9 +9,6 @@ void IRAM_ATTR isr_sample() {
   uint8_t s1 = (r1 >> 16) | (r1 & B10000);
   uint8_t s2 = (r2 >> 16) | (r2 & B10000);
   uint8_t s3 = (r3 >> 16) | (r3 & B10000);
-  //uint8_t value;
-  //if (s1 == s2) value = s2; else value = s3;
-  //dac_output_voltage(DAC_CHANNEL_2, value);
   if (s1 != s2) s1 = s3;
   dac_output_voltage(DAC_CHANNEL_2, s1);
   totalTimerInterruptCounter++;
@@ -29,8 +26,8 @@ static void core0_task(void *args) {
 }
 
 void setup() {
-  Serial.begin(115200);
-  while(!Serial);
+  /*Serial.begin(115200);
+  while(!Serial);*/
   
   pinMode(16, INPUT); //LPT: 2 (D0)
   pinMode(17, INPUT); //     3 (D1)
@@ -51,7 +48,7 @@ void setup() {
 
 void loop() {
 
-  static uint32_t old_time, new_time, old_totalTimerInterruptCounter, new_totalTimerInterruptCounter;
+  /*static uint32_t old_time, new_time, old_totalTimerInterruptCounter, new_totalTimerInterruptCounter;
   new_time = millis();
   if ( (new_time-old_time) > 1000 ) {
 
@@ -60,5 +57,5 @@ void loop() {
     old_totalTimerInterruptCounter = new_totalTimerInterruptCounter;
 
     old_time = new_time;
-  }
+  }*/
 }
