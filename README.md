@@ -68,7 +68,7 @@ lpt_dac = disney, covox, ston1, (or none/off)
 ```
 
 ## To do
-- Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463#c173793 (LPT pin 1)
+- Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463 (LPT pin 1)
 
 
 ## Disney Sound Source / DSS (not possible without extra hardware)
