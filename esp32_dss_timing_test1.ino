@@ -1,10 +1,10 @@
 #include "driver/ledc.h"
-
+ 
 ledc_timer_config_t ledc_timer = {
     .speed_mode = LEDC_HIGH_SPEED_MODE,
     .duty_resolution = LEDC_TIMER_2_BIT,
     .timer_num  = LEDC_TIMER_0,
-    .freq_hz    = 7000 // maybe 7006-7007Hz in reality
+    .freq_hz    = 7000
 };
  
 ledc_channel_config_t ledc_channel = {
@@ -33,11 +33,13 @@ void setup() {
 
 void loop() {
 
-  static uint32_t old_time, new_time, old_samplecnt_dac, old_samplecnt_i2s, old_isr_count;
+  static uint32_t old_time, new_time, old_isr_count;
   new_time = millis();
-  if ( (new_time-old_time) > 1000 ) {
-    Serial.println(isr_count-old_isr_count);
-    old_time = new_time;
-    old_isr_count = isr_count; 
+  if ( new_time > old_time ) {
+    uint32_t new_isr_count = isr_count;
+    Serial.println(new_isr_count-old_isr_count);
+    old_time += 1000;
+    old_isr_count = new_isr_count; 
   }
+
 }
