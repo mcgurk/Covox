@@ -1,14 +1,10 @@
 #include "driver/ledc.h"
- 
+
 ledc_timer_config_t ledc_timer = {
     .speed_mode = LEDC_HIGH_SPEED_MODE,
     .duty_resolution = LEDC_TIMER_2_BIT,
     .timer_num  = LEDC_TIMER_0,
-    //.freq_hz    = 32760
-    //.freq_hz    = 100000
-    //.freq_hz    = 32768
-    .freq_hz    = 7000
-    //.freq_hz    = 20000000
+    .freq_hz    = 7000 // maybe 7006-7007Hz in reality
 };
  
 ledc_channel_config_t ledc_channel = {
