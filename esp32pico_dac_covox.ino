@@ -1,7 +1,16 @@
 #include <driver/dac.h>
 
+volatile uint32_t totalTimerInterruptCounter = 0;
+volatile uint8_t conflictCounter = 0;
+
 void IRAM_ATTR isr_sample() {
-  dac_output_voltage(DAC_CHANNEL_2, REG_READ(GPIO_IN1_REG));
+  uint8_t s1 = REG_READ(GPIO_IN1_REG);
+  uint8_t s2 = REG_READ(GPIO_IN1_REG);
+  uint8_t s3 = REG_READ(GPIO_IN1_REG);
+  if (s1 != s2) { s1 = s3; conflictCounter++; }
+  dac_output_voltage(DAC_CHANNEL_2, s1);
+  //dac_output_voltage(DAC_CHANNEL_2, REG_READ(GPIO_IN1_REG));
+  totalTimerInterruptCounter++;
 }
 
 static void core0_task(void *args) {
@@ -16,6 +25,9 @@ static void core0_task(void *args) {
 }
 
 void setup() {
+  Serial.begin(115200);
+  while(!Serial);
+  
   pinMode(32, INPUT); //LPT: 2 (D0)
   pinMode(33, INPUT); //     3 (D1)
   pinMode(34, INPUT); //     4 (D2)
@@ -34,4 +46,14 @@ void setup() {
 }
 
 void loop() {
+
+  static uint32_t old_time, new_time, old_totalTimerInterruptCounter, new_totalTimerInterruptCounter;
+  new_time = millis();
+  if ( (new_time-old_time) > 1000 ) {
+    //new_totalTimerInterruptCounter = totalTimerInterruptCounter;
+    //Serial.println(new_totalTimerInterruptCounter - old_totalTimerInterruptCounter); // 100100???
+    //old_totalTimerInterruptCounter = new_totalTimerInterruptCounter;
+    Serial.println(conflictCounter);
+    old_time = new_time;
+  }
 }
