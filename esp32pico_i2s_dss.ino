@@ -19,8 +19,12 @@ uint32_t totalSamplesPlayed = 0;
 #define fcnt ((uint8_t)(back-front)) // 0-16
 
 void IRAM_ATTR isr_fifo() {
-  uint8_t s = REG_READ(GPIO_IN1_REG);
-  fifo_buf[back++] = s;
+  //uint8_t s1 = REG_READ(GPIO_IN1_REG);
+  uint8_t s1 = REG_READ(GPIO_IN1_REG);
+  uint8_t s2 = REG_READ(GPIO_IN1_REG);
+  uint8_t s3 = REG_READ(GPIO_IN1_REG);
+  if (s1 != s2) { s1 = s3; }
+  fifo_buf[back++] = s1;
   if (fcnt == 16) digitalWrite(FIFOFULL, HIGH);
 }
 
