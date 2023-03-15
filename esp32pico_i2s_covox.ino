@@ -1,5 +1,4 @@
 #include <driver/i2s.h>
-#include <driver/dac.h>
 
 #define I2S_WS 19
 #define I2S_SCK 22
