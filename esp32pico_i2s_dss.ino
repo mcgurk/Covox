@@ -19,22 +19,15 @@ uint32_t totalSamplesPlayed = 0;
 #define fcnt ((uint8_t)(back-front)) // 0-16
 
 void IRAM_ATTR isr_fifo() {
-  /*if (fcnt == 15) digitalWrite(FIFOFULL, HIGH); // buffer will be full, rise the full flag
-  totalFifoInterruptCounter++;
-  if (fcnt == 16) return; // if full, return
-  uint32_t r = REG_READ(GPIO_IN_REG);
-  uint8_t s = (r >> 16) | (r & B10000);
-  fifo_buf[back++] = s; // put sample to buffer*/
   uint8_t s = REG_READ(GPIO_IN1_REG);
   fifo_buf[back++] = s;
-  if (fcnt > 16) digitalWrite(FIFOFULL, HIGH);
+  if (fcnt == 16) digitalWrite(FIFOFULL, HIGH);
 }
 
 static void core0_task(void *args) {
   attachInterrupt(FIFOCLK, isr_fifo, RISING);
   while (1) {
     vTaskDelay(pdMS_TO_TICKS(500));
-    //if (fcnt > 15) digitalWrite(FIFOFULL, HIGH);
   }
 }
 
@@ -98,6 +91,7 @@ void setup() {
   // "The rising edge of the pulse on Pin 17 from the printer interface is used to clock data into the FIFO"
   //attachInterrupt(FIFOCLK, isr_fifo, RISING);
   attachInterrupt(I2S_WS, isr_sample, RISING);
+  //attachInterrupt(I2S_WS, isr_sample, FALLING);
   
 }
 
@@ -112,15 +106,11 @@ void loop() {
       i2s_write(I2S_NUM_0, &buf[0], sizeof(buf)/2, &bytesWritten, portMAX_DELAY);
     }
     if (buffer_full == 2) {
-      i2s_write(I2S_NUM_0, &buf[127], sizeof(buf)/2, &bytesWritten, portMAX_DELAY);
+      i2s_write(I2S_NUM_0, &buf[128], sizeof(buf)/2, &bytesWritten, portMAX_DELAY);
     }
     totalSamplesPlayed += bytesWritten/4;
     buffer_full = 0;
   }
-
-  /*Serial.print(totalFifoInterruptCounter); Serial.print(" / "); Serial.print(samples_played); Serial.print(" / "); Serial.println(samples_not_played);
-  for (int i=0; i<256; i++) { Serial.print(buf[i]); Serial.print(" "); } Serial.println();
-  delay(1000);*/
 
   newtime = micros();
   if ( (newtime-oldtime) > 50000 ) {
