@@ -35,8 +35,7 @@ void IRAM_ATTR isr_sample() {
   uint8_t s2 = REG_READ(GPIO_IN1_REG);
   uint8_t s3 = REG_READ(GPIO_IN1_REG);
   if (s1 != s2) { s1 = s3; conflictCounter++; }
-  //int16_t out = 32767-(s1 << 6);
-  uint16_t out = 32767-(s1 << 6);
+  uint16_t out = (s1 - 128) << 6;
   uint16_t i = totalTimerInterruptCounter & 1023;
   sBuffer[i] = (out << 16) | out;
   if (i == 511) buffer_full = 1;
