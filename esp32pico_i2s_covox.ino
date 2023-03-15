@@ -4,13 +4,14 @@
 #define I2S_WS 19
 #define I2S_SCK 22
 #define I2S_SD 21
-#define SAMPLE_RATE 32000
+#define SAMPLE_RATE 96000
 
 #define bufferLen 1024
-int16_t sBuffer[bufferLen];
+int32_t sBuffer[bufferLen];
 
 volatile uint32_t totalTimerInterruptCounter = 0;
 volatile uint32_t conflictCounter = 0;
+volatile uint8_t buffer_full = 0;
 
 const i2s_config_t i2s_config = {
   .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_TX ),
@@ -35,9 +36,12 @@ void IRAM_ATTR isr_sample() {
   uint8_t s2 = REG_READ(GPIO_IN1_REG);
   uint8_t s3 = REG_READ(GPIO_IN1_REG);
   if (s1 != s2) { s1 = s3; conflictCounter++; }
-  int16_t out = 32767-(s1 << 2);
-  sBuffer[0] = out;
-  sBuffer[1] = out;
+  //int16_t out = 32767-(s1 << 6);
+  uint16_t out = 32767-(s1 << 6);
+  uint16_t i = totalTimerInterruptCounter & 1023;
+  sBuffer[i] = (out << 16) | out;
+  if (i == 511) buffer_full = 1;
+  if (i == 1023) buffer_full = 2;
   totalTimerInterruptCounter++;
 }
 
@@ -71,14 +75,21 @@ void setup() {
 
 void loop() {
 
-  size_t bytesIn, bytesOut;
-  static uint32_t bytesread = 0, byteswritten = 0;
+  static uint32_t byteswritten = 0, totalSamplesPlayed = 0;
   esp_err_t result;
 
-  //result = i2s_write(I2S_NUM_0, &sBuffer, bufferLen, &bytesOut, portMAX_DELAY);
-  result = i2s_write(I2S_NUM_0, &sBuffer, 4, &bytesOut, portMAX_DELAY);
-  if (result != ESP_OK) Serial.println("error in i2s_write");
-  byteswritten += bytesOut;
+  if (buffer_full) {
+    size_t bytesWritten;
+    if (buffer_full == 1) {
+      result = i2s_write(I2S_NUM_0, &sBuffer[0], sizeof(sBuffer)/2, &bytesWritten, portMAX_DELAY);
+    }
+    if (buffer_full == 2) {
+      result = i2s_write(I2S_NUM_0, &sBuffer[512], sizeof(sBuffer)/2, &bytesWritten, portMAX_DELAY);
+    }
+    if (result != ESP_OK) Serial.println("error in i2s_write");
+    totalSamplesPlayed += bytesWritten/4;
+    buffer_full = 0;
+  }
 
   static uint32_t old_time, new_time, old_totalTimerInterruptCounter, new_totalTimerInterruptCounter;
   new_time = millis();
@@ -86,7 +97,8 @@ void loop() {
     //new_totalTimerInterruptCounter = totalTimerInterruptCounter;
     //Serial.println(new_totalTimerInterruptCounter - old_totalTimerInterruptCounter); // 100100???
     //old_totalTimerInterruptCounter = new_totalTimerInterruptCounter;
-    Serial.println(conflictCounter);
+    //Serial.println(conflictCounter);
+    Serial.println(totalSamplesPlayed);
     old_time = new_time;
   }
 }
