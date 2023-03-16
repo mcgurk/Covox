@@ -23,7 +23,7 @@ volatile uint8_t buffer_full = 0;
 volatile uint8_t front = 0;
 volatile uint8_t back = 0;
 volatile uint8_t fifo_buf[256];
-volatile uint8_t modeA = 0;
+volatile uint32_t modeA = 0;
 volatile uint32_t modeB = 0;
 volatile MODE mode = NONE;
 
@@ -69,8 +69,9 @@ static void core0_task_covox(void *args) {
   attachInterrupt(I2S_WS, isr_sample_covox, RISING);
   while (1) {
     //modeB = 1; // DEBUG!!!
-    //modeB++; // DEBUG!!!
-    vTaskDelay(pdMS_TO_TICKS(500));
+    modeB++; // DEBUG!!!
+    //vTaskDelay(pdMS_TO_TICKS(500));
+    vTaskDelay(10);
   }
 }
 
@@ -140,10 +141,9 @@ void setup() {
   attachInterrupt(I2S_WS, isr_sample_dss, RISING); // handles i2s samples
   mode = DSS;*/
 
-  //change_mode(COVOX); delay(100);
-  //i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_COVOX); i2s_start(I2S_NUM_0); delay(1000); i2s_stop(I2S_NUM_0);
-  //change_mode(DSS);
-  if (rtc_get_reset_reason(0) == 12) change_mode(DSS); else change_mode(COVOX);
+  change_mode(COVOX); 
+  //delay(1000); change_mode(DSS);
+  //if (rtc_get_reset_reason(0) == 12) change_mode(DSS); else change_mode(COVOX);
   //change_mode(COVOX);
   //Serial.println(rtc_get_reset_reason(0)); //12 on oma resetti
   //delay(2000);
@@ -180,7 +180,7 @@ void change_mode(MODE new_mode) {
   switch (new_mode) {
     case COVOX: //dss -> covox
       //if fifoclock low 0,5s?
-      xTaskCreatePinnedToCore(core0_task_covox, "core0_task_covox", 4096, NULL, 5, &task_handle_covox, 0); // create task_handle_covox (creates I2S_WS interrupt)
+      xTaskCreatePinnedToCore(core0_task_covox, "core0_task_covox", 4096, NULL, 5, &task_handle_covox, 1); // create task_handle_covox (creates I2S_WS interrupt)
       i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_COVOX); // set sample rate
       i2s_start(I2S_NUM_0); // start i2s_covox
       break;
@@ -242,8 +242,10 @@ void loop() {
     dss_detect = 0;*/
   }
 
-  if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) ESP.restart();
-  //if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) change_mode(DSS); //dss_detect++;
+  if (mode == DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) dss_detect = millis();
+  if (mode == DSS) if ((millis() - dss_detect) > 1000) change_mode(COVOX);
+  //if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) ESP.restart();
+  if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) change_mode(DSS); //dss_detect++;
   //if ((mode == DSS) && (!(REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) dss_detect++;
  
 
