@@ -1,7 +1,4 @@
 #include "driver/i2s.h"
-#include <esp_task_wdt.h>
-#include "soc/rtc_wdt.h"
-#include "esp_int_wdt.h"
 
 #define FIFOFULL 10 // fifofull, 10 (ACK) (DSS->PC)
 #define FIFOCLK 9 // fifoclock, 17 (Select Printer_) (PC->DSS)
@@ -23,40 +20,18 @@ volatile uint32_t cycles;
 uint32_t totalSamplesPlayed = 0;
 #define fcnt ((uint8_t)(back-front)) // 0-16
 
-void IRAM_ATTR isr_fifo() {
-  //uint8_t s1 = REG_READ(GPIO_IN1_REG);
-  uint8_t s1 = REG_READ(GPIO_IN1_REG);
-  uint8_t s2 = REG_READ(GPIO_IN1_REG);
-  uint8_t s3 = REG_READ(GPIO_IN1_REG);
-  if (s1 != s2) { s1 = s3; }
-  fifo_buf[back++] = s1;
-  if (fcnt == 16) digitalWrite(FIFOFULL, HIGH);
-}
-
 // "The rising edge of the pulse on Pin 17 from the printer interface is used to clock data into the FIFO"
 static void core0_task(void *args) {
-  //attachInterrupt(FIFOCLK, isr_fifo, RISING);
-  //esp_task_wdt_init(5, true);  // enable panic so ESP32 restarts
-  //esp_task_wdt_add(NULL);
-  //rtc_wdt_protect_off();
-  //rtc_wdt_disable();
   disableCore0WDT();
   disableLoopWDT();
-  //esp_task_wdt_delete(NULL);
-  //portDISABLE_INTERRUPTS();
   static uint32_t o;
   while (1) {
     while (!(REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {};
     fifo_buf[back++] = REG_READ(GPIO_IN1_REG);
     if (fcnt == 16) GPIO.out_w1ts = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, HIGH);
     while ((REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {};
-    /*uint32_t n = xthal_get_ccount();
-    cycles = n - o;
-    o = n;*/
-    //vTaskDelay(pdMS_TO_TICKS(500));
-    //esp_task_wdt_reset();
-    //vTaskDelay(10);
-    //totalFifoInterruptCounter
+    uint32_t n = xthal_get_ccount(); cycles = n - o; o = n; //debug
+    //totalFifoInterruptCounter++;
   }
 }
 
@@ -67,7 +42,7 @@ void isr_sample() {
     buf[i] = (s << 16) | s ;
     if (i & 1) front++; //update fifopointer only every other time
   } else buf[i] = 0;
-  if (fcnt < 15) digitalWrite(FIFOFULL, LOW);
+  if (fcnt < 16) GPIO.out_w1tc = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, LOW);
   if (i == 127) buffer_full = 1;
   if (i == 255) buffer_full = 2;
   totalTimerInterruptCounter++;
@@ -115,20 +90,12 @@ void setup() {
   i2s_set_pin(I2S_NUM_0, &pin_config);
   i2s_start(I2S_NUM_0);
 
-
   xTaskCreatePinnedToCore(core0_task, "core0_task", 4096, NULL, 5, NULL, 0);
-  // "The rising edge of the pulse on Pin 17 from the printer interface is used to clock data into the FIFO"
-  //attachInterrupt(FIFOCLK, isr_fifo, RISING);
-  attachInterrupt(I2S_WS, isr_sample, RISING);
-  //attachInterrupt(I2S_WS, isr_sample, FALLING);
-  
+  attachInterrupt(I2S_WS, isr_sample, RISING); // handles i2s samples
 }
 
 
-uint32_t oldtime = 0, newtime = 0;
-
 void loop() {
-
   if (buffer_full) {
     size_t bytesWritten;
     if (buffer_full == 1) {
@@ -141,11 +108,12 @@ void loop() {
     buffer_full = 0;
   }
 
+  static uint32_t oldtime = 0, newtime = 0;
   newtime = micros();
   if ( (newtime-oldtime) > 50000 ) {
     //Serial.print(totalTimerInterruptCounter*4-totalSamplesPlayed); Serial.print(" / "); Serial.println(totalFifoInterruptCounter);
-    Serial.println(totalSamplesPlayed);
-    //Serial.print(cycles); Serial.print(" "); Serial.println(totalSamplesPlayed);
+    //Serial.println(totalSamplesPlayed);
+    Serial.print(cycles); Serial.print(" "); Serial.println(totalSamplesPlayed);
     oldtime = newtime;
   }
 
