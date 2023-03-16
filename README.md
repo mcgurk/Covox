@@ -35,7 +35,7 @@ GND | Ground
 IO25 | Audio In-
 IO26 | Audio In+
 **I2S DAC:** |
-5V | 2-5VDD
+3.3V or 5V | VDD
 GND | Ground
 IO19 | WCLK
 IO22 | BLCK
