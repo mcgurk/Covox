@@ -7,6 +7,8 @@
 #define I2S_SD 21
 #define SAMPLE_RATE 14000
 
+#define VOLUME 5 // 0 min, 8 max
+
 uint32_t buf[256];
 volatile uint32_t totalTimerInterruptCounter = 0;
 volatile uint32_t totalFifoInterruptCounter = 0;
@@ -26,25 +28,27 @@ uint32_t totalSamplesPlayed = 0;
 static void core0_task(void *args) {
   disableCore0WDT();
   disableLoopWDT();
-  static uint32_t o;
   while (1) {
     while (!(REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is low
     fifo_buf[back++] = REG_READ(GPIO_IN1_REG);
     if (fcnt == 16) GPIO.out_w1ts = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, HIGH);
     while ((REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is high
-    //uint32_t n = xthal_get_ccount(); cycles = n - o; o = n; //debug //under 22 cycles
+    //static uint32_t o; uint32_t n = xthal_get_ccount(); cycles = n - o; o = n; //debug //under 22 cycles
     //totalFifoInterruptCounter++;
   }
 }
 
 void isr_sample() {
+  static uint32_t out = 0;
   uint16_t i = totalTimerInterruptCounter & 255;
-  if (fcnt > 0) {  
-    uint16_t s = (fifo_buf[front]-128) << 5;
-    buf[i] = (s << 16) | s ;
-    if (i & 1) front++; //update fifopointer only every other time
-  } else buf[i] = 0;
-  if (fcnt < 16) GPIO.out_w1tc = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, LOW);
+  if (i&1) {// read new "out" only every other time
+    if (fcnt > 0) {  
+      uint16_t s = (fifo_buf[front++]-128) << VOLUME;
+      out = (s << 16) | s ;
+    } else out = 0;
+    if (fcnt < 16) GPIO.out_w1tc = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, LOW);
+  }
+  buf[i] = out;
   if (i == 127) buffer_full = 1;
   if (i == 255) buffer_full = 2;
   totalTimerInterruptCounter++;
