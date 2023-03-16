@@ -120,3 +120,12 @@ ESP32 is 5V tolerant?
 And actually there is no 5V from LPT. https://www.epanorama.net/circuits/lptpower.html
 
 Disable WDT: https://www.esp32.com/viewtopic.php?p=62582
+
+```
+GPIO_IN_REG GPIO 0-31 input register 0x3FF4403C RO
+GPIO_IN1_REG GPIO 32-39 input register 0x3FF44040 RO
+```
+
+Note that the I/O GPIO pads are 0-19, 21-23, 25-27, 32-39, while the output GPIOs are 0-19, 21-23, 25-27, 32-33. GPIO pads 34-39 are input-only.
+
+
