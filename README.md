@@ -85,7 +85,7 @@ lpt_dac = disney, covox, ston1, (or none/off)
 - DAC doesn't work with 7kHz so double samples to 14kHz
 
 #### Links
-- DSS supported games: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
+- DSS supported games: https://www.mobygames.com/attribute/sheet/attributeId,44
 - Miles Sound System (MSS) DSS patch: https://www.vogons.org/viewtopic.php?t=69539
 - Disney Sound Source driver for Win3x, Win9x, WinNT 4: http://www.vogonsdrivers.com/getfile.php?fileid=1680&menustate=0
 - DSS Programmers Guide: https://archive.org/details/dss-programmers-guide/page/n1/mode/2up
