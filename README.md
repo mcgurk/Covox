@@ -71,12 +71,13 @@ lpt_dac = disney, covox, ston1, (or none/off)
 - Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463 (LPT pin 1) -> not possible. Pulse is too fast for ESP32.
 
 
-## Disney Sound Source / DSS (not possible without extra hardware)
+## Disney Sound Source / DSS
 
-ESP32 speed is not enough for proper FIFO-buffer emulation.
-
-Do this:
-https://www.vogons.org/viewtopic.php?p=405296#p405296
+#### ESP32
+- Cannot use interrupts, they are too slow. Dedicate another core (core0) for bitbanging FIFOCLK signal.
+- https://github.com/MacLeod-D/ESp32-Fast-external-IRQs
+- Use I2S WCLK for unload buffer interrupt
+- DAC doesn't work with 7kHz so double samples to 14kHz
 
 #### Links
 - DSS support: https://www.mobygames.com/attribute/sheet/attributeId,44/p,2/
@@ -85,6 +86,7 @@ https://www.vogons.org/viewtopic.php?p=405296#p405296
 - DSS Programmers Guide: https://archive.org/details/dss-programmers-guide/page/n1/mode/2up
 - Reversing the Disney Sound Source: https://www.vogons.org/viewtopic.php?f=62&t=42250&start=140
 - DIY DSS: https://www.vogons.org/viewtopic.php?p=474360#p474360
+- Vogons Disney Sound Source with FIFO-buffer ICs: https://www.vogons.org/viewtopic.php?p=405296#p405296
 
 #### DSS checks
 - Dungeon Master DSS detection: https://www.vogons.org/viewtopic.php?t=40751
