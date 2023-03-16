@@ -9,7 +9,7 @@
 #define SAMPLE_RATE_DSS 14000
 #define SAMPLE_RATE_COVOX 96000
 
-#define VOLUME 3 // 0 min, 8 max
+#define VOLUME 4 // 0 min, 8 max
 
 #define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 #define SIZE_OF_COVOX_BUF_IN_BYTES 1024*4
@@ -71,7 +71,6 @@ static void core0_task_dss(void *args) {
   disableCore0WDT();
   disableLoopWDT();
   while (1) {
-    //modeB = 2; // DEBUG!!!
     while (!(REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is low
     fifo_buf[back++] = REG_READ(GPIO_IN1_REG);
     if (fcnt == 16) GPIO.out_w1ts = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, HIGH);
