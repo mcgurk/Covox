@@ -115,7 +115,7 @@ Problems
 Commander Keen Dreams doesn't detect this DSS. Why?
 Reorganize pins. ESP32 doesn't boot cleanly when connected. Is IO14 and IO15 problem?
 
-ESP32 is 5V tolerant? 
+ESP32 is 5V tolerant? https://www.qworqs.com/2021/05/19/are-the-esp32-and-esp8266-5v-tolerant-yes-they-officially-are/
 
 And actually there is no 5V from LPT. https://www.epanorama.net/circuits/lptpower.html
 
