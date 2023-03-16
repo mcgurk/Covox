@@ -23,22 +23,15 @@ volatile uint8_t buffer_full = 0;
 volatile uint8_t front = 0;
 volatile uint8_t back = 0;
 volatile uint8_t fifo_buf[256];
-volatile uint32_t modeA = 0;
-volatile uint32_t modeB = 0;
 volatile MODE mode = NONE;
-
-volatile uint32_t cycles;
 
 uint32_t totalSamplesPlayed = 0;
 #define fcnt ((uint8_t)(back-front)) // 0-16
 
 void IRAM_ATTR isr_sample_covox() {
-  //modeA = 1; // DEBUG!!!
-  modeA++; // DEBUG!!!
   uint8_t s1 = REG_READ(GPIO_IN1_REG);
   uint8_t s2 = REG_READ(GPIO_IN1_REG);
   uint8_t s3 = REG_READ(GPIO_IN1_REG);
-  //if (s1 != s2) { s1 = s3; conflictCounter++; }
   if (s1 != s2) s1 = s3;
   uint16_t out = (s1 - 128) << VOLUME;
   uint16_t i = totalSampleCounter & 1023;
@@ -49,7 +42,6 @@ void IRAM_ATTR isr_sample_covox() {
 }
 
 void IRAM_ATTR isr_sample_dss() {
-  //modeA = 2; // DEBUG!!!
   static uint32_t out = 0;
   uint16_t i = totalSampleCounter & 255;
   if (i&1) {// read new "out" only every other time
@@ -65,12 +57,9 @@ void IRAM_ATTR isr_sample_dss() {
   totalSampleCounter++;
 }
 
-static void core0_task_covox(void *args) {
+static void core0_task_covox(void *args) { // actually this runs in core1
   attachInterrupt(I2S_WS, isr_sample_covox, RISING);
   while (1) {
-    //modeB = 1; // DEBUG!!!
-    modeB++; // DEBUG!!!
-    //vTaskDelay(pdMS_TO_TICKS(500));
     vTaskDelay(10);
   }
 }
@@ -91,7 +80,6 @@ static void core0_task_dss(void *args) {
     //totalFifoInterruptCounter++;
   }
 }
-
 
 const i2s_config_t i2s_config = {
   .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_TX),
@@ -130,25 +118,17 @@ void setup() {
   pinMode(FIFOCLK, INPUT); // fifoclock, 17 (Select Printer_) (PC->DSS)
   pinMode(FIFOFULL, OUTPUT); digitalWrite(FIFOFULL, LOW); // fifofull, 10 (ACK) (DSS->PC)
 
-  Serial.begin(115200);
+  /*Serial.begin(115200);
   while(Serial.available());
   Serial.println(); Serial.print("--- (compilation date: "); Serial.print(__DATE__); Serial.print(" "); Serial.print(__TIME__); Serial.println(") ---");
+  */
 
   i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
   i2s_set_pin(I2S_NUM_0, &pin_config);
-  /*i2s_start(I2S_NUM_0);
-  xTaskCreatePinnedToCore(core0_task_dss, "core0_task_dss", 4096, NULL, 5, &task_handle_dss, 0);
-  attachInterrupt(I2S_WS, isr_sample_dss, RISING); // handles i2s samples
-  mode = DSS;*/
 
   change_mode(COVOX); 
   //delay(1000); change_mode(DSS);
   //if (rtc_get_reset_reason(0) == 12) change_mode(DSS); else change_mode(COVOX);
-  //change_mode(COVOX);
-  //Serial.println(rtc_get_reset_reason(0)); //12 on oma resetti
-  //delay(2000);
-  //ESP.restart();
-
 }
 
 void change_mode(MODE new_mode) {
@@ -179,13 +159,12 @@ void change_mode(MODE new_mode) {
 
   switch (new_mode) {
     case COVOX: //dss -> covox
-      //if fifoclock low 0,5s?
+      // I don't like this much... if I put COVOX to core0, DSS doesn't work after COVOX without crackling. so I must use core1 to COVOX:
       xTaskCreatePinnedToCore(core0_task_covox, "core0_task_covox", 4096, NULL, 5, &task_handle_covox, 1); // create task_handle_covox (creates I2S_WS interrupt)
       i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_COVOX); // set sample rate
       i2s_start(I2S_NUM_0); // start i2s_covox
       break;
     case DSS: // covox -> dss
-      //if fifoclock rising
       i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_DSS); // set sample rate
       i2s_start(I2S_NUM_0); // start i2s_dss
       xTaskCreatePinnedToCore(core0_task_dss, "core0_task_dss", 4096, NULL, 5, &task_handle_dss, 0); // create task_handle_dss
@@ -196,7 +175,6 @@ void change_mode(MODE new_mode) {
   }
 
   mode = new_mode;
-
 }
 
 void loop() {
@@ -229,24 +207,19 @@ void loop() {
     buffer_full = 0;
   } // DSS
 
-  static uint32_t oldtime = 0, newtime = 0;
-  static uint32_t dss_detect = 0; 
+  /*static uint32_t oldtime = 0, newtime = 0;
   newtime = micros();
   if ( (newtime-oldtime) > 100000 ) {
     //Serial.print(totalSampleCounter*4-totalSamplesPlayed); Serial.print(" / "); Serial.println(totalFifoInterruptCounter);
     Serial.print(mode); Serial.print(" "); Serial.print(modeA); Serial.print(" "); Serial.print(modeB); Serial.print(" "); Serial.println(totalSamplesPlayed);
     //Serial.print(cycles); Serial.print(" "); Serial.println(totalSamplesPlayed);
     oldtime = newtime;
-    /*if ((mode != DSS) && dss_detect) change_mode(DSS);
-    if ((mode == DSS) && !dss_detect) change_mode(COVOX);
-    dss_detect = 0;*/
-  }
+  }*/
 
+  static uint32_t dss_detect = 0; 
   if (mode == DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) dss_detect = millis();
   if (mode == DSS) if ((millis() - dss_detect) > 1000) change_mode(COVOX);
   //if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) ESP.restart();
-  if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) change_mode(DSS); //dss_detect++;
-  //if ((mode == DSS) && (!(REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) dss_detect++;
- 
+  if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) change_mode(DSS); //dss_detect++; 
 
 }
