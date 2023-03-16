@@ -21,16 +21,18 @@ uint32_t totalSamplesPlayed = 0;
 #define fcnt ((uint8_t)(back-front)) // 0-16
 
 // "The rising edge of the pulse on Pin 17 from the printer interface is used to clock data into the FIFO"
+// this could be optimized little more: rely on samples comes in bursts. calculate how much there is free space in fifo and fill that and then rise fifofull
+// whis could be done even with unrolling while with case-command
 static void core0_task(void *args) {
   disableCore0WDT();
   disableLoopWDT();
   static uint32_t o;
   while (1) {
-    while (!(REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {};
+    while (!(REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is low
     fifo_buf[back++] = REG_READ(GPIO_IN1_REG);
     if (fcnt == 16) GPIO.out_w1ts = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, HIGH);
-    while ((REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {};
-    uint32_t n = xthal_get_ccount(); cycles = n - o; o = n; //debug
+    while ((REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is high
+    //uint32_t n = xthal_get_ccount(); cycles = n - o; o = n; //debug //under 22 cycles
     //totalFifoInterruptCounter++;
   }
 }
@@ -112,8 +114,8 @@ void loop() {
   newtime = micros();
   if ( (newtime-oldtime) > 50000 ) {
     //Serial.print(totalTimerInterruptCounter*4-totalSamplesPlayed); Serial.print(" / "); Serial.println(totalFifoInterruptCounter);
-    //Serial.println(totalSamplesPlayed);
-    Serial.print(cycles); Serial.print(" "); Serial.println(totalSamplesPlayed);
+    Serial.println(totalSamplesPlayed);
+    //Serial.print(cycles); Serial.print(" "); Serial.println(totalSamplesPlayed);
     oldtime = newtime;
   }
 
