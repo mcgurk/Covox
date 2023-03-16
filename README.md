@@ -6,7 +6,7 @@ Trying to make lpt soundcard Covox with microcontroller
 
 - ESP32-PICO-KIT with ESP32-PICO-D4 (ESP32 dev board or Wemos D1 mini ESP32)
 - (12 channel level shifter (min. 8 channel for basic covox))
-- Mono 2.5W Class D Audio Amplifier - PAM8302
+- I2S DAC amplifier MAX98357A (Mono 2.5W Class D Audio Amplifier - PAM8302)
 - Speaker (small shelf speaker is great choice)
 
 ## Wiring
