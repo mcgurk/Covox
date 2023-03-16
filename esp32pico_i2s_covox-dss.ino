@@ -1,5 +1,5 @@
 #include "driver/i2s.h"
-#include "rom/rtc.h"
+//#include "rom/rtc.h"
 
 #define FIFOCLK 9 // fifoclock, 17 (Select Printer_) (PC->DSS)
 #define FIFOFULL 10 // fifofull, 10 (ACK) (DSS->PC)
