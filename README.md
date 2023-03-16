@@ -115,4 +115,8 @@ Problems
 Commander Keen Dreams doesn't detect this DSS. Why?
 Reorganize pins. ESP32 doesn't boot cleanly when connected. Is IO14 and IO15 problem?
 
-ESP32 is 5V tolerant? And actually there is no 5V from LPT. 
+ESP32 is 5V tolerant? 
+
+And actually there is no 5V from LPT. https://www.epanorama.net/circuits/lptpower.html
+
+Disable WDT: https://www.esp32.com/viewtopic.php?p=62582
