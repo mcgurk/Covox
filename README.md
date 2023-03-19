@@ -72,10 +72,6 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 lpt_dac = disney, covox, ston1, (or none/off)
 ```
 
-## To do
-- Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463 (LPT pin 1) -> not possible. Pulse is too fast for ESP32. (or is it...)
-
-
 ## Disney Sound Source / DSS
 
 #### ESP32
@@ -97,11 +93,14 @@ lpt_dac = disney, covox, ston1, (or none/off)
 - Dungeon Master DSS detection: https://www.vogons.org/viewtopic.php?t=40751
 - Wolfenstein 3D writes 32 samples to FIFO and checks that FIFOFULL pin activates
 
-
 #### KDreams
 - doesn't detect
-- 33 sample interrupts comes
+- 33 sample interrupts comes trough
 
+## Stereo
+
+- Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463 (LPT pin 1) -> not possible. Pulse is too fast for ESP32. (or is it...)
+- https://datasheet.octopart.com/PM7528HP-Analog-Devices-datasheet-11801523.pdf
 
 ## Old garbage
 
