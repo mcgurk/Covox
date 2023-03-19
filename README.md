@@ -101,6 +101,8 @@ lpt_dac = disney, covox, ston1, (or none/off)
 
 - Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463 (LPT pin 1) -> not possible. Pulse is too fast for ESP32. (or is it...)
 - https://datasheet.octopart.com/PM7528HP-Analog-Devices-datasheet-11801523.pdf
+- http://loboris.eu/ESP32/Xtensa%20Instruction%20Set%20Architecture.pdf
+- https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
 
 ## Old garbage
 
