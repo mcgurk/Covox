@@ -32,7 +32,7 @@ void IRAM_ATTR isr_sample_covox_stereo() {
   //uint16_t out_left = (left - 128) << VOLUME;
   //uint16_t out_right = (right - 128) << VOLUME;
   uint32_t l = left, r = right;
-  uint16_t out_left = (CONVERT_GPIOREG_TO_SAMPLE(l)-128) << VOLUME;
+  uint16_t out_left = (CONVERT_GPIOREG_TO_SAMPLE(l)-128) << VOLUME; //tämäkin rätisee hiukan. miksi!?
   uint16_t out_right = (CONVERT_GPIOREG_TO_SAMPLE(r)-128) << VOLUME;
   //uint16_t out_left = 0, out_right = 0;
   uint16_t i = totalSampleCounter & 1023;
@@ -55,15 +55,27 @@ void IRAM_ATTR isr_sample_covox_stereo() {
   }
 }*/
 
+
 // PM7528HP: DAC A inverted, DAC B not inverted
 static void core0_task_covox_stereo(void *args) {
   disableCore0WDT();
   disableLoopWDT();
   while (1) {
     register uint32_t a, b;
+    //do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
+    //do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
     portDISABLE_INTERRUPTS();
-    do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
-    do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
+    uint32_t r1, r2;
+    __asm__ __volatile__(
+      "movi %0, 0x3FF4403C \n" // GPIO_IN_REG
+      "movi %1, 0x02000000 \n" // 1 << 25
+      "loop1: \n"
+      "l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop2: \n"
+      "l32i.n	%3, %0, 0 \n"
+      "bany 	%3, %1, loop2 \n"
+      : "=r" (r1), "=r" (r2), "=r" (a), "=r" (b));
     portENABLE_INTERRUPTS();
     left = b; right = a;
   }
