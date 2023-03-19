@@ -1,10 +1,21 @@
 #include "driver/i2s.h"
 
-#define STEREO_CHANNEL_SELECT 18
+#define STEREO_CHANNEL_SELECT 25 //18
 #define I2S_WS 19
 #define I2S_SCK 22
 #define I2S_SD 21
-#define SAMPLE_RATE_COVOX 96000
+#define SAMPLE_RATE_COVOX 44100
+
+#define D0 4
+#define D1 13
+#define D2 14
+#define D3 27
+#define D4 9
+#define D5 10
+#define D6 18
+#define D7 23
+
+#define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
 
 #define VOLUME 4 // 0 min, 8 max
 
@@ -15,11 +26,15 @@ volatile uint32_t totalSampleCounter = 0;
 volatile uint32_t totalChannelInterruptCounter = 0;
 volatile uint8_t buffer_full = 0;
 uint32_t totalSamplesPlayed = 0;
-volatile uint8_t left = 0, right = 0;
+volatile uint32_t left = 0, right = 0;
 
 void IRAM_ATTR isr_sample_covox_stereo() {
-  uint16_t out_left = (left - 128) << VOLUME;
-  uint16_t out_right = (right - 128) << VOLUME;
+  //uint16_t out_left = (left - 128) << VOLUME;
+  //uint16_t out_right = (right - 128) << VOLUME;
+  uint32_t l = left, r = right;
+  uint16_t out_left = (CONVERT_GPIOREG_TO_SAMPLE(l)-128) << VOLUME;
+  uint16_t out_right = (CONVERT_GPIOREG_TO_SAMPLE(r)-128) << VOLUME;
+  //uint16_t out_left = 0, out_right = 0;
   uint16_t i = totalSampleCounter & 1023;
   buf[i] = (out_left << 16) | out_right;
   if (i == 511) buffer_full = 1;
@@ -27,7 +42,7 @@ void IRAM_ATTR isr_sample_covox_stereo() {
   totalSampleCounter++;
 }
 
-static void core0_task_covox_stereo(void *args) {
+/*static void core0_task_covox_stereo(void *args) {
   disableCore0WDT();
   disableLoopWDT();
   while (1) {
@@ -36,9 +51,23 @@ static void core0_task_covox_stereo(void *args) {
     while ((REG_READ(GPIO_IN_REG) & (1<<STEREO_CHANNEL_SELECT))) {}; // while fifoclk pin is high
     right = REG_READ(GPIO_IN1_REG);
     //static uint32_t o; uint32_t n = xthal_get_ccount(); cycles = n - o; o = n; //debug //under 22 cycles
-    totalChannelInterruptCounter++;
+    //totalChannelInterruptCounter++;
   }
-}
+}*/
+
+// PM7528HP: DAC A inverted, DAC B not inverted
+static void core0_task_covox_stereo(void *args) {
+  disableCore0WDT();
+  disableLoopWDT();
+  while (1) {
+    register uint32_t a, b;
+    portDISABLE_INTERRUPTS();
+    do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
+    do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
+    portENABLE_INTERRUPTS();
+    left = b; right = a;
+  }
+ }
 
 const i2s_config_t i2s_config = {
   .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_TX),
@@ -61,14 +90,14 @@ const i2s_pin_config_t pin_config = {
 //------------------------------------------------------------------------------------------------------------------------
 
 void setup() {
-  pinMode(32, INPUT); //LPT: 2 (D0)
-  pinMode(33, INPUT); //     3 (D1)
-  pinMode(34, INPUT); //     4 (D2)
-  pinMode(35, INPUT); //     5 (D3)
-  pinMode(36, INPUT); //     6 (D4)
-  pinMode(37, INPUT); //     7 (D5)
-  pinMode(38, INPUT); //     8 (D6)
-  pinMode(39, INPUT); //     9 (D7)
+  pinMode(D0, INPUT); //LPT: 2 (D0)
+  pinMode(D1, INPUT); //     3 (D1)
+  pinMode(D2, INPUT); //     4 (D2)
+  pinMode(D3, INPUT); //     5 (D3)
+  pinMode(D4, INPUT); //     6 (D4)
+  pinMode(D5, INPUT); //     7 (D5)
+  pinMode(D6, INPUT); //     8 (D6)
+  pinMode(D7, INPUT); //     9 (D7)
                       //     GND
 
   pinMode(STEREO_CHANNEL_SELECT, INPUT); // fifoclock, 17 (Select Printer_) (PC->DSS)
@@ -89,7 +118,7 @@ void setup() {
 void loop() {
 
   if (buffer_full) {
-    esp_err_t result;
+    esp_err_t result = ESP_OK;
     size_t bytesWritten;
     if (buffer_full == 1) {
       result = i2s_write(I2S_NUM_0, &buf[0], SIZE_OF_COVOX_BUF_IN_BYTES/2, &bytesWritten, portMAX_DELAY);
@@ -107,7 +136,8 @@ void loop() {
   if ( (newtime-oldtime) > 100000 ) {
     //Serial.print(totalSampleCounter*4-totalSamplesPlayed); Serial.print(" / "); Serial.println(totalFifoInterruptCounter);
     //Serial.print(mode); Serial.print(" "); Serial.print(modeA); Serial.print(" "); Serial.print(modeB); Serial.print(" "); Serial.println(totalSamplesPlayed);
-    Serial.println(totalChannelInterruptCounter);
+    //Serial.println(totalChannelInterruptCounter);
+    Serial.println(millis());
     oldtime = newtime;
   }
 
