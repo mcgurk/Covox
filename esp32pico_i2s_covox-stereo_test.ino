@@ -27,6 +27,7 @@ volatile uint32_t totalChannelInterruptCounter = 0;
 volatile uint8_t buffer_full = 0;
 uint32_t totalSamplesPlayed = 0;
 volatile uint32_t left = 0, right = 0;
+volatile uint32_t cycles = 0;
 
 void IRAM_ATTR isr_sample_covox_stereo() {
   //uint16_t out_left = (left - 128) << VOLUME;
@@ -61,25 +62,76 @@ static void core0_task_covox_stereo(void *args) {
   disableCore0WDT();
   disableLoopWDT();
   while (1) {
+    //right = left = REG_READ(GPIO_IN_REG);
     register uint32_t a, b;
     //do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
     //do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
     portDISABLE_INTERRUPTS();
-    uint32_t r1, r2;
+    uint32_t r1, r2, r3;
     __asm__ __volatile__(
       "movi %0, 0x3FF4403C \n" // GPIO_IN_REG
       "movi %1, 0x02000000 \n" // 1 << 25
-      "loop1: \n"
-      "l32i.n	%2, %0, 0 \n"
+      "loop1: l32i.n	%2, %0, 0 \n"
       "bnone	%2, %1, loop1 \n"
-      "loop2: \n"
-      "l32i.n	%3, %0, 0 \n"
+      "loop1b: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1c: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1d: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1e: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1f: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1g: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1h: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1i: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1j: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1k: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1l: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1m: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1n: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1o: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1p: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1q: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      //"rsr %4,ccount \n"
+      "loop1r: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      /*"loop1s: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1t: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"
+      "loop1u: l32i.n	%2, %0, 0 \n"
+      "bnone	%2, %1, loop1 \n"*/
+      //"rsr %5,ccount \n"
+      "loop2: l32i.n	%3, %0, 0 \n"
       "bany 	%3, %1, loop2 \n"
-      : "=r" (r1), "=r" (r2), "=r" (a), "=r" (b));
+      /*"rsr %4,ccount \n"
+      "sub %0, %0, %0 \n"
+      "rsr %5,ccount \n"*/
+      "sub %5, %5, %4 \n"
+      : "=r" (r1), "=r" (r2), "=r" (a), "=r" (b), "=r" (r3), "=a" (cycles));
     portENABLE_INTERRUPTS();
     left = b; right = a;
+    totalChannelInterruptCounter++;
   }
  }
+
+void IRAM_ATTR isr_channelselect() {
+  right = left = REG_READ(GPIO_IN_REG);
+  totalChannelInterruptCounter++;
+}
 
 const i2s_config_t i2s_config = {
   .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_TX),
@@ -125,6 +177,8 @@ void setup() {
   xTaskCreatePinnedToCore(core0_task_covox_stereo, "core0_task_covox_stereo", 4096, NULL, 5, NULL, 0);
   attachInterrupt(I2S_WS, isr_sample_covox_stereo, RISING);
 
+  //attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, RISING);
+
 }
 
 void loop() {
@@ -143,14 +197,17 @@ void loop() {
     buffer_full = 0;
   } // COVOX
 
-  static uint32_t oldtime = 0, newtime = 0;
+  static uint32_t oldtime = 0, newtime = 0, last = 0;
   newtime = micros();
-  if ( (newtime-oldtime) > 100000 ) {
+  //if ( (newtime-oldtime) > 100000 ) {
+  //if ( (newtime-oldtime) > 1000000 ) {
+  if ( newtime > oldtime ) {
     //Serial.print(totalSampleCounter*4-totalSamplesPlayed); Serial.print(" / "); Serial.println(totalFifoInterruptCounter);
     //Serial.print(mode); Serial.print(" "); Serial.print(modeA); Serial.print(" "); Serial.print(modeB); Serial.print(" "); Serial.println(totalSamplesPlayed);
-    //Serial.println(totalChannelInterruptCounter);
-    Serial.println(millis());
-    oldtime = newtime;
+    //Serial.println(totalChannelInterruptCounter-last); last = totalChannelInterruptCounter;
+    //Serial.println(millis());
+    Serial.println(cycles);
+    oldtime += 100000;//oldtime = newtime;
   }
 
 }
