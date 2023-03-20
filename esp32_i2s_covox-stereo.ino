@@ -1,7 +1,7 @@
 #include "driver/i2s.h"
 #include "rom/rtc.h"
 
-#define STEREO_CHANNEL_SELECT 25 //18
+#define STEREO_CHANNEL_SELECT 25
 #define I2S_WS 19
 #define I2S_SCK 22
 #define I2S_SD 21
@@ -44,75 +44,38 @@ void IRAM_ATTR isr_sample_covox_stereo() {
   totalSampleCounter++;
 }
 
-/*static void core0_task_covox_stereo(void *args) {
-  disableCore0WDT();
-  disableLoopWDT();
-  while (1) {
-    while (!(REG_READ(GPIO_IN_REG) & (1<<STEREO_CHANNEL_SELECT))) {}; // while fifoclk pin is low
-    left = REG_READ(GPIO_IN1_REG);
-    while ((REG_READ(GPIO_IN_REG) & (1<<STEREO_CHANNEL_SELECT))) {}; // while fifoclk pin is high
-    right = REG_READ(GPIO_IN1_REG);
-    //static uint32_t o; uint32_t n = xthal_get_ccount(); cycles = n - o; o = n; //debug //under 22 cycles
-    //totalChannelInterruptCounter++;
-  }
-}*/
-
-
 // PM7528HP: DAC A inverted, DAC B not inverted
 static void core0_task_covox_stereo(void *args) {
   disableCore0WDT();
   disableLoopWDT();
   while (1) {
-    //right = left = REG_READ(GPIO_IN_REG);
-    //register uint32_t a, b;
     //do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
     //do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
     portDISABLE_INTERRUPTS();
-    uint32_t r1, r2, r3, r4;
-    //volatile uint32_t r1 = 0x3FF4403C; // GPIO_IN_REG
-    //volatile uint32_t r2 = 0x02000000; // 1 << 25
+    uint32_t temp_reg;
+    const uint32_t i1 = 0x3FF4403C, i2 = (1<<STEREO_CHANNEL_SELECT);
     __asm__ __volatile__(
-      "movi %0, 0x3FF4403C \n" // GPIO_IN_REG
-      "movi %1, 0x02000000 \n" // 1 << 25
-      //"rsr %4,ccount \n"
-      "start: \n"
-      //"rsil %6, 3 \n"
+      //"movi %0, 0x3FF4403C \n" // GPIO_IN_REG
+      //"movi %1, 0x02000000 \n" // 1 << 25
       "loop1: \n" 
-      "memw \n" 
-      "l32i.n	%2, %0, 0 \n" // read left channel
-      "bnone	%2, %1, loop1 \n" // if LOW, go back to start
-      "memw \n"
-      "l32i.n	%4, %0, 0 \n"
-      "bnone	%4, %1, loop1 \n" // if LOW, go back to start
+      //"memw \n" 
+      "l32i.n	%0, %3, 0 \n" // read left channel
+      "bnone	%0, %4, loop1 \n" // if LOW, go back to start
+      //"memw \n"
+      "l32i.n	%2, %3, 0 \n"
+      "bnone	%2, %4, loop1 \n" // if LOW, go back to start
       " \n"
       "loop2: \n"
-      "memw \n"
-      "l32i.n	%3, %0, 0 \n" // read right channel
-      "bany 	%3, %1, loop2 \n" // if HIGH, go back to start
-      "memw \n"
-      "l32i.n	%4, %0, 0 \n"
-      "bany	%4, %1, loop2 \n" // if HIGH, go back to start
-      //"rsr %5,ccount \n"
-      //"sub %5, %5, %4 \n"
-      //"movi.n %2, 0x80 \n"
-      //"movi.n %3, 0x80 \n"
-      //left = a; right = b;
-      /*"memw \n"
-      "s32i.n	%2, %7, 0 \n"
-      "memw \n"
-      "s32i.n	%3, %8, 0 \n"*/
-      //"rsil %6, 0 \n"
-      //"j start \n"
-      //: "=r" (r1), "=r" (r2), "=r" (a), "=r" (b), "=r" (r3), "=a" (cycles), "=r" (r4), "=a" (left), "=a" (right));
-      : "=r" (r1), "=r" (r2), "=a" (left), "=a" (right), "=r" (r3));
-    /*if (cycles < 500) {
-      //while (signal_ptr < 200) s[signal_ptr++] = REG_READ(GPIO_IN_REG);
-      cnt++;
-    }*/
+      //"memw \n"
+      "l32i.n	%1, %3, 0 \n" // read right channel
+      "bany 	%1, %4, loop2 \n" // if HIGH, go back to start
+      //"memw \n"
+      "l32i.n	%2, %3, 0 \n"
+      "bany	  %2, %4, loop2 \n" // if HIGH, go back to start
+      //: "=a" (left), "=a" (right), "=r" (r3) : "i" (0x3FF4403C), "i" (0x02000000));
+      : "=a" (left), "=a" (right), "=r" (temp_reg) : "a" (i1), "a" (i2));
+      //: "=r" (r1), "=r" (r2), "=a" (left), "=a" (right), "=r" (r3));
     portENABLE_INTERRUPTS();
-    //left = a;
-    //right = b;
-    //totalChannelInterruptCounter++;
   }
  }
 
