@@ -58,53 +58,61 @@ void IRAM_ATTR isr_sample_covox_stereo() {
 }*/
 
 
-uint32_t s[2048];
-volatile uint32_t drawing = 0;
-volatile uint32_t cnt = 0;
-
 // PM7528HP: DAC A inverted, DAC B not inverted
 static void core0_task_covox_stereo(void *args) {
   disableCore0WDT();
   disableLoopWDT();
   while (1) {
     //right = left = REG_READ(GPIO_IN_REG);
-    register uint32_t a, b;
+    //register uint32_t a, b;
     //do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
     //do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
     portDISABLE_INTERRUPTS();
     uint32_t r1, r2, r3, r4;
+    //volatile uint32_t r1 = 0x3FF4403C; // GPIO_IN_REG
+    //volatile uint32_t r2 = 0x02000000; // 1 << 25
     __asm__ __volatile__(
       "movi %0, 0x3FF4403C \n" // GPIO_IN_REG
       "movi %1, 0x02000000 \n" // 1 << 25
-      "rsr %4,ccount \n"
+      //"rsr %4,ccount \n"
+      "start: \n"
+      //"rsil %6, 3 \n"
       "loop1: \n" 
       "memw \n" 
-      "l32i.n	%2, %0, 0 \n" // read left? channel
+      "l32i.n	%2, %0, 0 \n" // read left channel
       "bnone	%2, %1, loop1 \n" // if LOW, go back to start
       "memw \n"
-      "l32i.n	%6, %0, 0 \n"
-      "bnone	%6, %1, loop1 \n" // if LOW, go back to start
+      "l32i.n	%4, %0, 0 \n"
+      "bnone	%4, %1, loop1 \n" // if LOW, go back to start
       " \n"
       "loop2: \n"
       "memw \n"
-      "l32i.n	%3, %0, 0 \n" // read right? channel
+      "l32i.n	%3, %0, 0 \n" // read right channel
       "bany 	%3, %1, loop2 \n" // if HIGH, go back to start
       "memw \n"
-      "l32i.n	%6, %0, 0 \n"
-      "bany	%6, %1, loop2 \n" // if HIGH, go back to start
-      "rsr %5,ccount \n"
-      "sub %5, %5, %4 \n"
+      "l32i.n	%4, %0, 0 \n"
+      "bany	%4, %1, loop2 \n" // if HIGH, go back to start
+      //"rsr %5,ccount \n"
+      //"sub %5, %5, %4 \n"
       //"movi.n %2, 0x80 \n"
       //"movi.n %3, 0x80 \n"
-      : "=r" (r1), "=r" (r2), "=r" (a), "=r" (b), "=r" (r3), "=a" (cycles), "=r" (r4));
-    if (cycles < 500) {
+      //left = a; right = b;
+      /*"memw \n"
+      "s32i.n	%2, %7, 0 \n"
+      "memw \n"
+      "s32i.n	%3, %8, 0 \n"*/
+      //"rsil %6, 0 \n"
+      //"j start \n"
+      //: "=r" (r1), "=r" (r2), "=r" (a), "=r" (b), "=r" (r3), "=a" (cycles), "=r" (r4), "=a" (left), "=a" (right));
+      : "=r" (r1), "=r" (r2), "=a" (left), "=a" (right), "=r" (r3));
+    /*if (cycles < 500) {
       //while (signal_ptr < 200) s[signal_ptr++] = REG_READ(GPIO_IN_REG);
       cnt++;
-    }
+    }*/
     portENABLE_INTERRUPTS();
-    left = a;
-    right = b;
-    totalChannelInterruptCounter++;
+    //left = a;
+    //right = b;
+    //totalChannelInterruptCounter++;
   }
  }
 
@@ -149,10 +157,10 @@ void setup() {
   pinMode(STEREO_CHANNEL_SELECT, INPUT_PULLUP); // LPT pin 1 (_strobe)
   pinMode(26, OUTPUT); digitalWrite(26, LOW);
 
-  Serial.begin(115200);
+  /*Serial.begin(115200);
   while(Serial.available());
   Serial.println(); Serial.print("--- (compilation date: "); Serial.print(__DATE__); Serial.print(" "); Serial.print(__TIME__); Serial.println(") ---");
-
+  */
 
   i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
   i2s_set_pin(I2S_NUM_0, &pin_config);
@@ -161,12 +169,12 @@ void setup() {
   //xTaskCreatePinnedToCore(core0_task_covox_stereo, "core0_task_covox_stereo", 4096, NULL, 5, NULL, 0);
   //attachInterrupt(I2S_WS, isr_sample_covox_stereo, RISING);
   if (rtc_get_reset_reason(0) == 5) {
-    Serial.println("stereo");
+    //Serial.println("stereo");
     //delay(1000);
     xTaskCreatePinnedToCore(core0_task_covox_stereo, "core0_task_covox_stereo", 4096, NULL, 5, NULL, 0);
     attachInterrupt(I2S_WS, isr_sample_covox_stereo, RISING);
   } else {
-    Serial.println("mono");
+    //Serial.println("mono");
     //delay(1000);
     attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, RISING);
   }
@@ -209,10 +217,10 @@ void loop() {
     drawing = 0;
     oldtime += 100000;//oldtime = newtime;
   }*/
-  if (cnt != oldcnt) {
+  /*if (cnt != oldcnt) {
     //for (uint32_t i = 0; i < 150; i++) Serial.print((s[i] >> STEREO_CHANNEL_SELECT)&1);
     Serial.print(" "); Serial.println(cnt);
     oldcnt = cnt;
-  }
+  }*/
 
 }
