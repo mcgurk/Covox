@@ -102,8 +102,8 @@ static void core0_task_covox_stereo(void *args) {
       cnt++;
     }
     portENABLE_INTERRUPTS();
-    left = b;
-    right = a;
+    left = a;
+    right = b;
     totalChannelInterruptCounter++;
   }
  }
