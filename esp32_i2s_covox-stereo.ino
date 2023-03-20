@@ -71,7 +71,6 @@ static void core0_task_covox_stereo(void *args) {
     register uint32_t a, b;
     //do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
     //do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
-    //if (!drawing) {
     portDISABLE_INTERRUPTS();
     uint32_t r1, r2, r3, r4;
     __asm__ __volatile__(
@@ -80,14 +79,15 @@ static void core0_task_covox_stereo(void *args) {
       "rsr %4,ccount \n"
       "loop1: \n" 
       "memw \n" 
-      "l32i.n	%2, %0, 0 \n"
+      "l32i.n	%2, %0, 0 \n" // read left? channel
       "bnone	%2, %1, loop1 \n" // if LOW, go back to start
       "memw \n"
       "l32i.n	%6, %0, 0 \n"
       "bnone	%6, %1, loop1 \n" // if LOW, go back to start
       " \n"
-      "loop2: \n" //memw \n"
-      "l32i.n	%3, %0, 0 \n"
+      "loop2: \n"
+      "memw \n"
+      "l32i.n	%3, %0, 0 \n" // read right? channel
       "bany 	%3, %1, loop2 \n" // if HIGH, go back to start
       "memw \n"
       "l32i.n	%6, %0, 0 \n"
@@ -97,23 +97,14 @@ static void core0_task_covox_stereo(void *args) {
       //"movi.n %2, 0x80 \n"
       //"movi.n %3, 0x80 \n"
       : "=r" (r1), "=r" (r2), "=r" (a), "=r" (b), "=r" (r3), "=a" (cycles), "=r" (r4));
-      //: "=r" (r1), "=r" (r2), "=r" (a));
-    //delayMicroseconds(4);
-    //left = REG_READ(GPIO_IN_REG);//0x80; //b;
-    /*s[0] = r4;
-    s[1] = a;
-    s[2] = b;
-    uint32_t signal_ptr = 3;*/
     if (cycles < 500) {
       //while (signal_ptr < 200) s[signal_ptr++] = REG_READ(GPIO_IN_REG);
       cnt++;
     }
     portENABLE_INTERRUPTS();
-    //delayMicroseconds(4);
-    left = b;//0x80;//b;//REG_READ(GPIO_IN_REG);//0x80; //b; 
+    left = b;
     right = a;
-    //}
-    //totalChannelInterruptCounter++;
+    totalChannelInterruptCounter++;
   }
  }
 
@@ -133,7 +124,7 @@ const i2s_config_t i2s_config = {
   .intr_alloc_flags = 0,
   .dma_buf_count = 4,
   .dma_buf_len = 1024,
-  .use_apll = false
+  .use_apll = true //false
 };
 
 const i2s_pin_config_t pin_config = {
@@ -156,6 +147,7 @@ void setup() {
                       //     GND
 
   pinMode(STEREO_CHANNEL_SELECT, INPUT_PULLUP); // LPT pin 1 (_strobe)
+  pinMode(26, OUTPUT); digitalWrite(26, LOW);
 
   Serial.begin(115200);
   while(Serial.available());
