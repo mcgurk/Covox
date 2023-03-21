@@ -42,7 +42,6 @@ IO22 | BLCK
 IO21 | DATA
 
 
-
 ## Links
 - https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 - https://www.weigu.lu/microcontroller/tips_tricks/esp32_tips_tricks/index.html
