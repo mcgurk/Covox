@@ -1,4 +1,11 @@
-22.3.2023 0.40
+## 22.3.2023 0.40
+
+## FLASH
+```
+cmd.exe /C "cd /D C:\Espressif\frameworks\esp-idf-v4.4.4\compon...rameworks/esp-idf-v4.4.4/components/esptool_py/run_serial_tool.cmake"
+esptool.py esp32 -p com11 -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 40m --flash_size 2MB 0x1000 bootloader/bootloader.bin 0x10000 main.bin 0x8000 partition_table/partition-table.bin
+```
+
  ```
 #define VOLUME 4 // 0 min, 8 max
 #define DEBUG
