@@ -51,9 +51,40 @@ static void core0_task_covox_stereo(void *args) {
   while (1) {
     //do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
     //do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
+    /*portDISABLE_INTERRUPTS();
+    uint32_t temp_reg, a, b;
+    uint32_t i1 = 0x3FF4403C, i2 = (1<<STEREO_CHANNEL_SELECT);
+    uint32_t test = 0;// = &left;
+    __asm__ __volatile__(
+      "LOOP1: \n" 
+      //"memw \n" 
+      "l32i.n	%2, %0, 0 \n" // read left channel
+      "bnone	%2, %1, LOOP1 \n" // if LOW, go back to start
+      //"memw \n"
+      "l32i.n	%4, %0, 0 \n"
+      "bnone	%4, %1, LOOP1 \n" // if LOW, go back to start
+      " \n"
+      "LOOP2: \n"
+      //"memw \n"
+      "l32i.n	%3, %0, 0 \n" // read right channel
+      "bany 	%3, %1, LOOP2 \n" // if HIGH, go back to start
+      //"memw \n"
+      "l32i.n	%4, %0, 0 \n"
+      "bany	  %4, %1, LOOP2 \n" // if HIGH, go back to start
+      //: "=a" (left), "=a" (right), "=r" (temp_reg) : "a" (i1), "a" (i2));
+      "s32i.n	%2, %5, 0 \n"
+      "s32i.n	%3, %6, 0 \n"
+      //"mov %[LEFT], %[A] \n"
+      //"mov %[RIGHT], %[B] \n"
+      : "=r" (i1), "=r" (i2), "=r" (a), "=r" (b) :  "r" (temp_reg), "a" (&left), "a" (&right) );
+      //: [LEFT] "=a" (left), [RIGHT] "=a" (right) : [TMP] "r" (temp_reg), [GPIO] "r" (i1), [MASK] "r" (i2));
+      //: [LEFT] "=a" (left), [RIGHT] "=a" (right) : [A] "r" (a), [B] "r" (b), [TMP] "r" (temp_reg), [GPIO] "r" (i1), [MASK] "r" (i2));
+      //: "=a" (left), "=a" (right), "=r" (temp_reg) : "r" (temp_reg), "r" (i1), "r" (i2), "r" (&left), "r" (&right));
+    portENABLE_INTERRUPTS();*/
     portDISABLE_INTERRUPTS();
-    uint32_t temp_reg;
+    uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
     const uint32_t i1 = 0x3FF4403C, i2 = (1<<STEREO_CHANNEL_SELECT);
+    uint32_t i3 = (uint32_t)&left, i4 = (uint32_t)&right;
     __asm__ __volatile__(
       //"movi %0, 0x3FF4403C \n" // GPIO_IN_REG
       //"movi %1, 0x02000000 \n" // 1 << 25
@@ -72,8 +103,12 @@ static void core0_task_covox_stereo(void *args) {
       //"memw \n"
       "l32i.n	%2, %3, 0 \n"
       "bany	  %2, %4, loop2 \n" // if HIGH, go back to start
+      //"memw \n"
+      "s32i.n	%0, %5, 0 \n"
+      "s32i.n	%1, %6, 0 \n"
       //: "=a" (left), "=a" (right), "=r" (r3) : "i" (0x3FF4403C), "i" (0x02000000));
-      : "=a" (left), "=a" (right), "=r" (temp_reg) : "a" (i1), "a" (i2));
+      //: "=a" (left), "=a" (right), "=r" (temp_reg) : "a" (i1), "a" (i2), "a" (i3), "a" (i4) );
+      : "=r" (temp_reg), "=r" (temp_reg2), "=r" (temp_reg3) : "a" (i1), "a" (i2), "a" (i3), "a" (i4) );
       //: "=r" (r1), "=r" (r2), "=a" (left), "=a" (right), "=r" (r3));
     portENABLE_INTERRUPTS();
   }
