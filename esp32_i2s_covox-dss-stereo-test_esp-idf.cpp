@@ -127,39 +127,49 @@ static void core0_task_stereo(void *args) {
   //disableLoopWDT();
   portDISABLE_INTERRUPTS();
   while (1) {
-	register uint32_t a, b;
+	// Crystal Dreams soi huonommin, vaikka lyhempi:
+	/*register uint32_t a, b;
+    do { left = REG_READ(GPIO_IN_REG); } while (!(left&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
+	loop2:
+    do { right = REG_READ(GPIO_IN_REG); } while (right&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
+    if ( REG_READ(GPIO_IN_REG)&(1<<STEREO_CHANNEL_SELECT) ) goto loop2; //do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low*/
+	//Crystal Dreams soi paremmin, vaikka yhteismitta pidempi:
+    /*register uint32_t a, b;
     do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
 	loop2:
     do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
-    if ( REG_READ(GPIO_IN_REG)&(1<<STEREO_CHANNEL_SELECT) ) goto loop2; //do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
-    left = a; right = b;
-	/*//portDISABLE_INTERRUPTS();
+    if ( REG_READ(GPIO_IN_REG)&(1<<STEREO_CHANNEL_SELECT) ) goto loop2;
+    left = a; right = b;*/
+	
+    //left = a; right = b;
+	//portDISABLE_INTERRUPTS();
     uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
     const uint32_t gpio_reg = 0x3FF4403C, mask = (1<<STEREO_CHANNEL_SELECT);
     const uint32_t left_ptr = (uint32_t)&left;
     const uint32_t right_ptr = (uint32_t)&right;
     __asm__ __volatile__(
       "loop1: \n" 
-      "memw \n" 
+      //"memw \n" 
       "l32i.n	%0, %3, 0 \n" // read left channel
       "bnone	%0, %4, loop1 \n" // if LOW, go back to start
-      "memw \n"
+      //"memw \n"
       //"l32i.n	%2, %3, 0 \n"
       //"bnone	%2, %4, loop1 \n" // if LOW, go back to start
       " \n"
       "loop2: \n"
-      "memw \n"
+      //"memw \n"
       "l32i.n	%1, %3, 0 \n" // read right channel
       "bany 	%1, %4, loop2 \n" // if HIGH, go back to start
-      "memw \n"
+      //"memw \n"
       "l32i.n	%2, %3, 0 \n"
       "bany	  %2, %4, loop2 \n" // if HIGH, go back to start
-      "memw \n"
+      //"memw \n"
       "s32i.n	%0, %5, 0 \n"
-      "memw \n"
+      //"memw \n"
       "s32i.n	%1, %6, 0 \n"
-      : "=r" (temp_reg), "=r" (temp_reg2), "=r" (temp_reg3) : "a" (gpio_reg), "a" (mask), "a" (left_ptr), "a" (right_ptr) );
-    //portENABLE_INTERRUPTS();*/
+      "j loop1 \n"
+      : "=&r" (temp_reg), "=&r" (temp_reg2), "=&r" (temp_reg3) : "a" (gpio_reg), "a" (mask), "a" (left_ptr), "a" (right_ptr) );
+    //portENABLE_INTERRUPTS();
     /*portDISABLE_INTERRUPTS();
     uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
     const uint32_t gpio_reg = 0x3FF4403C, mask = (1<<STEREO_CHANNEL_SELECT);
