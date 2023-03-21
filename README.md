@@ -105,12 +105,6 @@ lpt_dac = disney, covox, ston1, (or none/off)
 - 2,15kohm between two gpio (example IO4 and IO26). it works as switchable external pullup for stereo select signal. it is very weak and crucial for operation. 
 - Problem in autodetection: after stereo player (iplay, dmp, crystal dreams) DSS-enable signal (LPT pin17) stays up. To get back to normal covox you have to start DSS-program or some other means drop DSS-enable signal down.
 
-## FLASH
-```
-cmd.exe /C "cd /D C:\Espressif\frameworks\esp-idf-v4.4.4\compon...rameworks/esp-idf-v4.4.4/components/esptool_py/run_serial_tool.cmake"
-esptool.py esp32 -p com11 -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 40m --flash_size 2MB 0x1000 bootloader/bootloader.bin 0x10000 main.bin 0x8000 partition_table/partition-table.bin
-```
-
 ## Old garbage
 
 ESP32 DAC output: 25, GND
