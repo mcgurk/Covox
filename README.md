@@ -4,42 +4,41 @@ Trying to make lpt soundcard Covox with microcontroller
 
 ## Parts
 
-- ESP32-PICO-KIT with ESP32-PICO-D4 (or ESP32 dev board or Wemos D1 mini ESP32)
-- (12 channel level shifter (min. 8 channel for basic covox))
-- I2S DAC amplifier MAX98357A (or Mono 2.5W Class D Audio Amplifier - PAM8302)
-- Speaker (small shelf speaker is great choice)
+- ESP32-PICO-KIT with ESP32-PICO-D4 or ESP32 dev board or Wemos D1 mini ESP32)
+- I2S DAC PCM5102A/GY-PCM5102 or I2S DAC amplifier MAX98357A (for ESP32 internal DAC: Mono 2.5W Class D Audio Amplifier - PAM8302)
 
 ## Wiring
 
-ESP32-PICO-KIT | LPT (D25)
+ESP32 | LPT (D25)
 --- | ---
-Differential audio out 25 & 26 |
 **Covox:** |
-IO32 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 2 (data0)
-IO33 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 3 (data1)
-IO34 ( $\colorbox{yellow}{{\color{yellow}{yellow}}}$ ) | 4 (data2)
-IO35 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 5 (data3)
-IO36 ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | 6 (data4)
-IO37 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 7 (data5)
-IO38 ( $\colorbox{pink}{{\color{pink}{pink}}}$ ) | 8 (data6)
-IO39 ( $\colorbox{green}{{\color{green}{green}}}$ ) | 9 (data7)
+IO26 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 2 (D0)
+IO13 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 3 (D1)
+IO14 ( $\colorbox{yellow}{{\color{yellow}{yellow}}}$ ) | 4 (D2)
+IO27 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 5 (D3)
+IO9  ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | 6 (D4)
+IO10 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 7 (D5)
+IO18 ( $\colorbox{pink}{{\color{pink}{pink}}}$ ) | 8 (D6)
+IO23 ( $\colorbox{green}{{\color{green}{green}}}$ ) | 9 (D7)
 GND | GND-GND | GND (e.g. 25)
 **DSS:** | 
-IO9 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 17 (FIFOCLK) (Select Printer_) (PC->DSS)
-IO10 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 10 (FIFOFULL) (ACK) (DSS->PC)
+IO19 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 17 (FIFOCLK) (Select Printer_) (PC->DSS)
+IO22 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 10 (FIFOFULL) (ACK) (DSS->PC)
 **StereoIn1Covox:** | 
-IO18 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 1 (Strobe_) (channel select PC->Covox)
-**Amplifier:** |
+IO25 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 1 (Strobe_) (channel select PC->Covox)
+**I2S DAC:** |
+5V | VDD (use 5V if possible, more stable)
+GND | Ground
+IO21 | WCLK
+IO33 | BLCK
+IO32 | DATA
+GND | SCK (if GY-PCM5102)
+--- | ---
+(**Amplifier:**) |
 5V | 2-5VDD
 GND | Ground
 IO25 | Audio In-
 IO26 | Audio In+
-**I2S DAC:** |
-3.3V or 5V | VDD
-GND | Ground
-IO19 | WCLK
-IO22 | BLCK
-IO21 | DATA
 
 
 ## Links
