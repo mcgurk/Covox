@@ -44,7 +44,6 @@ void loop(){
 #define I2S_SD 32 //21
 #define SAMPLE_RATE_DSS 14000
 #define SAMPLE_RATE_COVOX 96000
-//#define SAMPLE_RATE_COVOX 14000
 
 enum MODE { NONE = 0, COVOX = 1, DSS = 2, STEREO = 3 };
 
@@ -61,6 +60,7 @@ MODE mode = NONE;
 uint32_t totalSamplesPlayed = 0;
 TaskHandle_t task_handle_dss = NULL;
 TaskHandle_t task_handle_covox = NULL;
+TaskHandle_t task_handle_stereo = NULL;
 volatile uint32_t left = 0, right = 0;
 
 #define fcnt ((uint8_t)(back-front)) // 0-16
@@ -109,6 +109,7 @@ void IRAM_ATTR isr_sample_dss() {
 static void core0_task_dss(void *args) {
   //disableCore0WDT();
   //disableLoopWDT();
+  portDISABLE_INTERRUPTS();
   while (1) {
     while (!(REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is low
     fifo_buf[back++] = REG_READ(GPIO_IN_REG);
@@ -121,7 +122,7 @@ static void core0_task_dss(void *args) {
 
 // -------stereo--------
 
-void IRAM_ATTR isr_sample_covox_stereo() {
+void IRAM_ATTR isr_sample_stereo() {
   uint32_t l = left, r = right;
   uint16_t out_left = (CONVERT_GPIOREG_TO_SAMPLE(l)-128) << VOLUME;
   uint16_t out_right = (CONVERT_GPIOREG_TO_SAMPLE(r)-128) << VOLUME;
@@ -133,12 +134,12 @@ void IRAM_ATTR isr_sample_covox_stereo() {
 }
 
 // PM7528HP: DAC A inverted, DAC B not inverted
-static void core0_task_covox_stereo(void *args) {
+static void core0_task_stereo(void *args) {
   //disableCore0WDT();
   //disableLoopWDT();
   portDISABLE_INTERRUPTS();
   while (1) {
-	register uint32_t a, b, c;
+	register uint32_t a, b;
     do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
 	loop2:
     do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
@@ -203,11 +204,12 @@ static void core0_task_covox_stereo(void *args) {
   }
  }
 
-void IRAM_ATTR isr_channelselect() {
+/*void IRAM_ATTR isr_channelselect() {
   Serial.println("STEREO DETECTED!!!!");
-  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
-  esp_deep_sleep(1000); // us
-}
+  ESP.restart();
+  //esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+  //esp_deep_sleep(1000); // us
+}*/
 
 // -----stereo ^^^^-------
 
@@ -252,6 +254,11 @@ void change_mode(MODE new_mode) {
       detachInterrupt(I2S_WS); //disable i2s interrupt
       i2s_stop(I2S_NUM_0); //stop i2s
       break;
+    case STEREO:
+      vTaskDelete(task_handle_stereo); //disable task
+      detachInterrupt(I2S_WS); //disable i2s interrupt
+      i2s_stop(I2S_NUM_0); //stop i2s
+      break;
     default:
       break;
   }
@@ -263,7 +270,7 @@ void change_mode(MODE new_mode) {
       i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_COVOX); // set sample rate
       i2s_start(I2S_NUM_0);
       //attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, RISING); // STEREO COVOX detection
-      attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, FALLING); // STEREO COVOX detection
+      //attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, FALLING); // STEREO COVOX detection
       break;
     case DSS: // covox -> dss
       i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_DSS); // set sample rate
@@ -274,8 +281,8 @@ void change_mode(MODE new_mode) {
     case STEREO:
       i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_COVOX); // set sample rate
       i2s_start(I2S_NUM_0);
-      xTaskCreatePinnedToCore(core0_task_covox_stereo, "core0_task_covox_stereo", 4096, NULL, 5, NULL, 0);
-      attachInterrupt(I2S_WS, isr_sample_covox_stereo, RISING);
+      xTaskCreatePinnedToCore(core0_task_stereo, "core0_task_stereo", 4096, NULL, 5, &task_handle_stereo, 0);
+      attachInterrupt(I2S_WS, isr_sample_stereo, RISING);
 	  pinMode(STEREO_CHANNEL_SELECT_PULLUP, OUTPUT); digitalWrite(STEREO_CHANNEL_SELECT_PULLUP, HIGH);
       break;
     default:
@@ -316,7 +323,12 @@ void setup() {
   i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
   i2s_set_pin(I2S_NUM_0, &pin_config);
 
-  if (rtc_get_reset_reason(0) == 5) { // STEREO COVOX
+  uint32_t d = 0;
+  for (uint32_t i = 0; i < 1000000; i++) if (REG_READ(GPIO_IN_REG) & (1<<STEREO_CHANNEL_SELECT)) d++;
+  Serial.println(d);
+  delay(1000);
+  //if (rtc_get_reset_reason(0) == 5) { // STEREO COVOX
+  if (d) { // STEREO COVOX
     change_mode(STEREO);
   } else {
     change_mode(COVOX);
@@ -373,10 +385,10 @@ void loop() {
   #endif
 
   if (mode != STEREO) { // don't autodetect COVOX or DSS in STEREO-mode
-    static uint32_t dss_detect = 0; 
+    static uint32_t dss_detect = 0;
+	if (REG_READ(GPIO_IN_REG) & (1<<STEREO_CHANNEL_SELECT)) ESP.restart();
     if (mode == DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) dss_detect = millis();
     if (mode == DSS) if ((millis() - dss_detect) > 1000) change_mode(COVOX);
-    //if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) ESP.restart();
     if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) change_mode(DSS);
   }
 
