@@ -42,6 +42,8 @@ volatile uint8_t back = 0;
 volatile uint32_t fifo_buf[256];
 MODE mode = NONE;
 uint32_t totalSamplesPlayed = 0;
+TaskHandle_t task_handle_dss = NULL;
+TaskHandle_t task_handle_covox = NULL;
 
 volatile uint32_t debug = 0;
 
@@ -94,7 +96,7 @@ static void core0_task_dss(void *args) {
   while (1) {
     while (!(REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is low
     fifo_buf[back++] = REG_READ(GPIO_IN_REG);
-    if (fcnt == 16) { GPIO.out_w1ts = ((uint32_t)1 << FIFOFULL); debug = 1; } //digitalWrite(FIFOFULL, HIGH);
+    if (fcnt == 16) GPIO.out_w1ts = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, HIGH);
     while ((REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is high
     totalFifoInterruptCounter++;
   }
@@ -117,42 +119,6 @@ const i2s_pin_config_t pin_config = {
   .ws_io_num = I2S_WS,
   .data_out_num = I2S_SD
 };
-
-//------------------------------------------------------------------------------------------------------------------------
-
-TaskHandle_t task_handle_dss = NULL;
-TaskHandle_t task_handle_covox = NULL;
-
-void setup() {
-  pinMode(D0, INPUT); //LPT: 2 (D0)
-  pinMode(D1, INPUT); //     3 (D1)
-  pinMode(D2, INPUT); //     4 (D2)
-  pinMode(D3, INPUT); //     5 (D3)
-  pinMode(D4, INPUT); //     6 (D4)
-  pinMode(D5, INPUT); //     7 (D5)
-  pinMode(D6, INPUT); //     8 (D6)
-  pinMode(D7, INPUT); //     9 (D7)
-                      //     GND
-
-  pinMode(FIFOCLK, INPUT); // fifoclock, 17 (Select Printer_) (PC->DSS)
-  pinMode(FIFOFULL, OUTPUT); digitalWrite(FIFOFULL, LOW); // fifofull, 10 (ACK) (DSS->PC)
-  pinMode(STEREO_CHANNEL_SELECT, INPUT_PULLUP); // LPT pin 1 (_strobe)
-  pinMode(EXTRA_GND, OUTPUT); digitalWrite(EXTRA_GND, LOW); // just another GND
-
-  #ifdef DEBUG
-  Serial.begin(115200);
-  while(Serial.available());
-  Serial.println(); Serial.print("--- (compilation date: "); Serial.print(__DATE__); Serial.print(" "); Serial.print(__TIME__); Serial.println(") ---");
-  #endif
-
-  i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
-  i2s_set_pin(I2S_NUM_0, &pin_config);
-
-  //change_mode(COVOX); 
-  //delay(1000); 
-  change_mode(DSS);
-  //if (rtc_get_reset_reason(0) == 12) change_mode(DSS); else change_mode(COVOX);
-}
 
 void change_mode(MODE new_mode) {
   MODE old_mode = mode;
@@ -203,6 +169,41 @@ void change_mode(MODE new_mode) {
   #endif
 }
 
+//------------------------------------------------------------------------------------------------------------------------
+
+
+void setup() {
+  pinMode(D0, INPUT); //LPT: 2 (D0)
+  pinMode(D1, INPUT); //     3 (D1)
+  pinMode(D2, INPUT); //     4 (D2)
+  pinMode(D3, INPUT); //     5 (D3)
+  pinMode(D4, INPUT); //     6 (D4)
+  pinMode(D5, INPUT); //     7 (D5)
+  pinMode(D6, INPUT); //     8 (D6)
+  pinMode(D7, INPUT); //     9 (D7)
+                      //     GND
+
+  pinMode(FIFOCLK, INPUT); // fifoclock, 17 (Select Printer_) (PC->DSS)
+  pinMode(FIFOFULL, OUTPUT); digitalWrite(FIFOFULL, LOW); // fifofull, 10 (ACK) (DSS->PC)
+  pinMode(STEREO_CHANNEL_SELECT, INPUT_PULLUP); // LPT pin 1 (_strobe)
+  pinMode(EXTRA_GND, OUTPUT); digitalWrite(EXTRA_GND, LOW); // just another GND
+
+  #ifdef DEBUG
+  Serial.begin(115200);
+  while(Serial.available());
+  Serial.println(); Serial.print("--- (compilation date: "); Serial.print(__DATE__); Serial.print(" "); Serial.print(__TIME__); Serial.println(") ---");
+  #endif
+
+  i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
+  i2s_set_pin(I2S_NUM_0, &pin_config);
+
+  change_mode(COVOX); 
+  //delay(1000); 
+  //change_mode(DSS);
+  //if (rtc_get_reset_reason(0) == 12) change_mode(DSS); else change_mode(COVOX);
+}
+
+
 void loop() {
 
   if ((mode == COVOX) && buffer_full) {
@@ -249,10 +250,10 @@ void loop() {
   }
   #endif
 
-  /*static uint32_t dss_detect = 0; 
+  static uint32_t dss_detect = 0; 
   if (mode == DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) dss_detect = millis();
   if (mode == DSS) if ((millis() - dss_detect) > 1000) change_mode(COVOX);
   //if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) ESP.restart();
-  if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) change_mode(DSS); //dss_detect++;*/
+  if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) change_mode(DSS);
 
 }
