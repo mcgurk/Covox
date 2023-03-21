@@ -26,6 +26,7 @@ IO19 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 17 (FIFOCLK) (Select Print
 IO22 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 10 (FIFOFULL) (ACK) (DSS->PC)
 **StereoIn1Covox:** | 
 IO25 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 1 (Strobe_) (channel select PC->Covox)
+ | resistor between IO4 and IO25 for external pullup (I have 2.15kohm, 4.7kohm might work too)
 **I2S DAC:** |
 5V | Vin (use 5V if possible, more stable)
 GND | Ground
