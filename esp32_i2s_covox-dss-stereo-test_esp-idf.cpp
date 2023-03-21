@@ -1,24 +1,12 @@
 //file: main.cpp
 #include "Arduino.h"
 
-/*void setup(){
-  Serial.begin(115200);
-  while(!Serial){
-    ; // wait for serial port to connect
-  }
-}
-
-void loop(){
-    Serial.println("loop");
-    delay(1000);
-}*/
-
 #include "driver/i2s.h"
 #include "rom/rtc.h"
 
 #define VOLUME 4 // 0 min, 8 max
 #define DEBUG
-#define EXTRA_GND 26
+//#define EXTRA_GND 26
 
 //COVOX
 #define D0 26
@@ -312,7 +300,7 @@ void setup() {
   pinMode(FIFOCLK, INPUT); // fifoclock, 17 (Select Printer_) (PC->DSS)
   pinMode(FIFOFULL, OUTPUT); digitalWrite(FIFOFULL, LOW); // fifofull, 10 (ACK) (DSS->PC)
   pinMode(STEREO_CHANNEL_SELECT, INPUT_PULLUP); // LPT pin 1 (_strobe)
-  pinMode(EXTRA_GND, OUTPUT); digitalWrite(EXTRA_GND, LOW); // just another GND
+  //pinMode(EXTRA_GND, OUTPUT); digitalWrite(EXTRA_GND, LOW); // just another GND
 
   #ifdef DEBUG
   Serial.begin(115200);
