@@ -9,22 +9,21 @@
 //#define EXTRA_GND 26
 
 //COVOX
-#define D0 26
-#define D1 13
-#define D2 14
-#define D3 27
-#define D4 9
-#define D5 10
-#define D6 18
-#define D7 23
-#define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
+#define D0 26 // white
+#define D1 13 // grey
+#define D2 14 // yellow
+#define D3 27 // brown
+#define D4  9 // blue
+#define D5 10 // purple
+#define D6 18 // pink
+#define D7 23 // green
+
 #define STEREO_CHANNEL_SELECT 25
 #define STEREO_CHANNEL_SELECT_PULLUP 4
 
 //DSS
 #define FIFOCLK 19 // fifoclock, 17 (Select Printer_) (PC->DSS)
 #define FIFOFULL 22 // fifofull, 10 (ACK) (DSS->PC)
-#define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 
 // I2S:
 #define I2S_WS 21 // 19
@@ -32,6 +31,10 @@
 #define I2S_SD 32 //21
 #define SAMPLE_RATE_DSS 14000
 #define SAMPLE_RATE_COVOX 96000
+
+#define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
+
+#define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 
 enum MODE { NONE = 0, COVOX = 1, DSS = 2, STEREO = 3 };
 
@@ -100,10 +103,15 @@ static void core0_task_dss(void *args) {
   //disableLoopWDT();
   portDISABLE_INTERRUPTS();
   while (1) {
-    while (!(REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is low
+    /*while (!(REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is low
     fifo_buf[back++] = REG_READ(GPIO_IN_REG);
     if (fcnt == 16) GPIO.out_w1ts = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, HIGH);
-    while ((REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is high
+    while ((REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))) {}; // while fifoclk pin is high*/
+	register uint32_t a;
+	do { a = REG_READ(GPIO_IN_REG); } while (!(a & (1<<FIFOCLK))); // a = when channel select goes high
+	fifo_buf[back++] = a;
+	if (fcnt == 16) GPIO.out_w1ts = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, HIGH);
+    while ((REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))); // while fifoclk pin is high
     //totalFifoInterruptCounter++;
   }
 }
@@ -124,26 +132,10 @@ void IRAM_ATTR isr_sample_stereo() {
 
 // PM7528HP: DAC A inverted, DAC B not inverted
 static void core0_task_stereo(void *args) {
-  //disableCore0WDT();
-  //disableLoopWDT();
   portDISABLE_INTERRUPTS();
   while (1) {
-	// Crystal Dreams soi huonommin, vaikka lyhempi:
-	/*register uint32_t a, b;
-    do { left = REG_READ(GPIO_IN_REG); } while (!(left&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
-	loop2:
-    do { right = REG_READ(GPIO_IN_REG); } while (right&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
-    if ( REG_READ(GPIO_IN_REG)&(1<<STEREO_CHANNEL_SELECT) ) goto loop2; //do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low*/
-	//Crystal Dreams soi paremmin, vaikka yhteismitta pidempi:
-    /*register uint32_t a, b;
-    do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
-	loop2:
-    do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
-    if ( REG_READ(GPIO_IN_REG)&(1<<STEREO_CHANNEL_SELECT) ) goto loop2;
-    left = a; right = b;*/
-	
-    //left = a; right = b;
-	//portDISABLE_INTERRUPTS();
+	//do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
+    //do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
     uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
     const uint32_t gpio_reg = 0x3FF4403C, mask = (1<<STEREO_CHANNEL_SELECT);
     const uint32_t left_ptr = (uint32_t)&left;
@@ -171,34 +163,6 @@ static void core0_task_stereo(void *args) {
       "j loop1 \n"
       : "=&r" (temp_reg), "=&r" (temp_reg2), "=&r" (temp_reg3) : "a" (gpio_reg), "a" (mask), "a" (left_ptr), "a" (right_ptr) );
     //portENABLE_INTERRUPTS();
-    /*portDISABLE_INTERRUPTS();
-    uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
-    const uint32_t gpio_reg = 0x3FF4403C, mask = (1<<STEREO_CHANNEL_SELECT);
-    const uint32_t left_ptr = (uint32_t)&left;
-    const uint32_t right_ptr = (uint32_t)&right;
-    __asm__ __volatile__(
-      "loop2: \n"
-      //"memw \n"
-      "l32i.n	%1, %3, 0 \n" // read right channel
-      "bany 	%1, %4, loop2 \n" // if HIGH, go back to start
-      //"memw \n"
-      "l32i.n	%2, %3, 0 \n"
-      "bany	  %2, %4, loop2 \n" // if HIGH, go back to start
-      " \n"
-      "loop1: \n" 
-      //"memw \n" 
-      "l32i.n	%0, %3, 0 \n" // read left channel
-      "bnone	%0, %4, loop1 \n" // if LOW, go back to start
-      //"memw \n"
-      //"l32i.n	%2, %3, 0 \n"
-      //"bnone	%2, %4, loop1 \n" // if LOW, go back to start
-      " \n"
-      //"memw \n"
-      "s32i.n	%0, %5, 0 \n"
-      //"memw \n"
-      "s32i.n	%1, %6, 0 \n"
-      : "=r" (temp_reg), "=r" (temp_reg2), "=r" (temp_reg3) : "a" (gpio_reg), "a" (mask), "a" (left_ptr), "a" (right_ptr) );
-    portENABLE_INTERRUPTS();*/
     //totalStereoTaskCounter++;
   }
  }
@@ -212,7 +176,7 @@ void IRAM_ATTR isr_channelselect() {
   channelsignalcount++;
 }
 
-// -----stereo ^^^^-------
+//-----stereo ^^^^-------
 
 
 const i2s_config_t i2s_config = {
@@ -270,8 +234,6 @@ void change_mode(MODE new_mode) {
       xTaskCreatePinnedToCore(core0_task_covox, "core0_task_covox", 4096, NULL, 5, &task_handle_covox, 1); // create task_handle_covox (creates I2S_WS interrupt)
       i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_COVOX); // set sample rate
       i2s_start(I2S_NUM_0);
-      //attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, RISING); // STEREO COVOX detection
-      //attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, FALLING); // STEREO COVOX detection
       break;
     case DSS: // covox -> dss
       i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_DSS); // set sample rate
@@ -326,8 +288,10 @@ void setup() {
 
   // detect stereo
   attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, CHANGE);
-  delay(500);
+  delay(200);
+  #ifdef DEBUG
   Serial.println(channelsignalcount);
+  #endif
   
   /*uint32_t d = 0;
   for (uint32_t i = 0; i < 1000000; i++) if (REG_READ(GPIO_IN_REG) & (1<<STEREO_CHANNEL_SELECT)) d++;
@@ -335,7 +299,7 @@ void setup() {
   delay(1000);*/
   //if (rtc_get_reset_reason(0) == 5) { // STEREO COVOX
   //if (d) { // STEREO COVOX
-  if (channelsignalcount > 5) {
+  if (channelsignalcount > 2) {
     //detachInterrupt(STEREO_CHANNEL_SELECT);
     change_mode(STEREO);
   } else {
@@ -346,7 +310,6 @@ void setup() {
 
 
 void loop() {
-
   if ((mode == COVOX || mode == STEREO) && buffer_full) {
     esp_err_t result = ESP_FAIL;
     size_t bytesWritten;
@@ -356,7 +319,9 @@ void loop() {
     if (buffer_full == 2) {
       result = i2s_write(I2S_NUM_0, &buf[512], SIZE_OF_COVOX_BUF_IN_BYTES/2, &bytesWritten, portMAX_DELAY);
     }
+	#ifdef DEBUG
     if (result != ESP_OK) Serial.println("error in i2s_write (covox)");
+	#endif
     totalSamplesPlayed += bytesWritten/4;
     buffer_full = 0;
   } // COVOX
@@ -370,12 +335,13 @@ void loop() {
     if (buffer_full == 2) {
       result = i2s_write(I2S_NUM_0, &buf[128], SIZE_OF_DSS_BUF_IN_BYTES/2, &bytesWritten, portMAX_DELAY);
     }
+	#ifdef DEBUG
     if (result != ESP_OK) Serial.println("error in i2s_write (dss)");
+	#endif
     totalSamplesPlayed += bytesWritten/4;
     buffer_full = 0;
   } // DSS
 
-  #ifdef DEBUG
   static uint32_t oldtime = 0, newtime = 0, oldchannelsignalcount = 0;
   newtime = micros();
   //if ( (newtime-oldtime) > 100000 ) {
@@ -386,21 +352,17 @@ void loop() {
 	  if (mode != STEREO) if ( signals > 10 ) ESP.restart();
 	  if (mode == STEREO) if ( signals < 2 ) ESP.restart();
 	}
-	/*if ( (channelsignalcount - oldchannelsignalcount) > 10 ) {
-	  if (mode != STEREO) ESP.restart(); 
-    } else {
-	  //if (mode == STEREO) ESP.restart();
-	}*/
     oldchannelsignalcount = channelsignalcount;
+	#ifdef DEBUG
     //Serial.print(totalSampleCounter*4-totalSamplesPlayed); Serial.print(" / "); Serial.println(totalFifoInterruptCounter);
     //Serial.print(mode); Serial.print(" "); Serial.print(modeA); Serial.print(" "); Serial.print(modeB); Serial.print(" "); Serial.println(totalSamplesPlayed);
     //Serial.println(totalChannelInterruptCounter-last); last = totalChannelInterruptCounter;
     //Serial.println(millis());
     Serial.print(millis()); Serial.print(" "); Serial.print(totalSampleCounter); Serial.print(" "); Serial.print(totalStereoTaskCounter); Serial.print(" "); Serial.print(channelsignalcount); Serial.print(" "); Serial.println(mode);
     //Serial.print(millis()); Serial.print(" "); Serial.print(back); Serial.print(" "); Serial.print(front); Serial.print(" "); Serial.print(totalFifoInterruptCounter); Serial.print(" "); Serial.println(debug);
+	#endif
     oldtime += 1000000;//oldtime = newtime;
   }
-  #endif
 
   if (mode != STEREO) { // don't autodetect COVOX or DSS in STEREO-mode
     static uint32_t dss_detect = 0;
