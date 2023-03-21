@@ -20,7 +20,7 @@ IO9  ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | 6 (D4)
 IO10 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 7 (D5)
 IO18 ( $\colorbox{pink}{{\color{pink}{pink}}}$ ) | 8 (D6)
 IO23 ( $\colorbox{green}{{\color{green}{green}}}$ ) | 9 (D7)
-GND | GND-GND | GND (e.g. 25)
+GND | GND (18-25)
 **DSS:** | 
 IO19 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 17 (FIFOCLK) (Select Printer_) (PC->DSS)
 IO22 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 10 (FIFOFULL) (ACK) (DSS->PC)
