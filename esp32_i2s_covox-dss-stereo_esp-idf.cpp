@@ -342,7 +342,6 @@ void setup() {
     change_mode(COVOX);
   }
   //change_mode(COVOX);
-  channelsignalcount = 0;
 }
 
 
@@ -382,11 +381,16 @@ void loop() {
   //if ( (newtime-oldtime) > 100000 ) {
   //if ( (newtime-oldtime) > 1000000 ) {
   if ( newtime > oldtime ) {
-	if ( (channelsignalcount - oldchannelsignalcount) > 10 ) {
+	uint32_t signals = (channelsignalcount - oldchannelsignalcount);
+	if (millis() > 2000) {
+	  if (mode != STEREO) if ( signals > 10 ) ESP.restart();
+	  if (mode == STEREO) if ( signals < 2 ) ESP.restart();
+	}
+	/*if ( (channelsignalcount - oldchannelsignalcount) > 10 ) {
 	  if (mode != STEREO) ESP.restart(); 
     } else {
 	  //if (mode == STEREO) ESP.restart();
-	}
+	}*/
     oldchannelsignalcount = channelsignalcount;
     //Serial.print(totalSampleCounter*4-totalSamplesPlayed); Serial.print(" / "); Serial.println(totalFifoInterruptCounter);
     //Serial.print(mode); Serial.print(" "); Serial.print(modeA); Serial.print(" "); Serial.print(modeB); Serial.print(" "); Serial.println(totalSamplesPlayed);
