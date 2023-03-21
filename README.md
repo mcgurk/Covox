@@ -4,7 +4,7 @@ Trying to make lpt soundcard Covox with microcontroller
 
 ## Parts
 
-- ESP32-PICO-KIT with ESP32-PICO-D4 or ESP32 dev board or Wemos D1 mini ESP32)
+- ESP32-PICO-KIT with ESP32-PICO-D4 or ESP32 dev board or Wemos D1 mini ESP32
 - I2S DAC PCM5102A/GY-PCM5102 or I2S DAC amplifier MAX98357A (for ESP32 internal DAC: Mono 2.5W Class D Audio Amplifier - PAM8302)
 
 ## Wiring
