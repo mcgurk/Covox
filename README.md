@@ -40,7 +40,6 @@ GND | Ground
 IO25 | Audio In-
 IO26 | Audio In+
 
-
 ## Links
 - https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
 - https://www.weigu.lu/microcontroller/tips_tricks/esp32_tips_tricks/index.html
@@ -53,12 +52,6 @@ IO26 | Audio In+
 - ESP32 DAC: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/dac.html
 
 # Misc stuff
-
-###
-```
-// .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT
-buf[i] = (0x80<<24) | (s<<8); // IO26 = 0x80, IO25 = sample
-```
 
 #### ASM
 ```
@@ -135,4 +128,7 @@ GPIO_IN1_REG GPIO 32-39 input register 0x3FF44040 RO
 
 Note that the I/O GPIO pads are 0-19, 21-23, 25-27, 32-39, while the output GPIOs are 0-19, 21-23, 25-27, 32-33. GPIO pads 34-39 are input-only.
 
-
+```
+// .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT
+buf[i] = (0x80<<24) | (s<<8); // IO26 = 0x80, IO25 = sample
+```
