@@ -50,6 +50,7 @@ TaskHandle_t task_handle_dss = NULL;
 TaskHandle_t task_handle_covox = NULL;
 TaskHandle_t task_handle_stereo = NULL;
 volatile uint32_t left = 0, right = 0;
+volatile uint32_t channelsignalcount = 0;
 
 #define fcnt ((uint8_t)(back-front)) // 0-16
 
@@ -202,12 +203,14 @@ static void core0_task_stereo(void *args) {
   }
  }
 
-/*void IRAM_ATTR isr_channelselect() {
-  Serial.println("STEREO DETECTED!!!!");
-  ESP.restart();
+
+void IRAM_ATTR isr_channelselect() {
+  //Serial.println("STEREO DETECTED!!!!");
+  //ESP.restart();
   //esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
   //esp_deep_sleep(1000); // us
-}*/
+  channelsignalcount++;
+}
 
 // -----stereo ^^^^-------
 
@@ -321,18 +324,25 @@ void setup() {
   i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
   i2s_set_pin(I2S_NUM_0, &pin_config);
 
-  uint32_t d = 0;
+  // detect stereo
+  attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, CHANGE);
+  delay(500);
+  Serial.println(channelsignalcount);
+  
+  /*uint32_t d = 0;
   for (uint32_t i = 0; i < 1000000; i++) if (REG_READ(GPIO_IN_REG) & (1<<STEREO_CHANNEL_SELECT)) d++;
   Serial.println(d);
-  delay(1000);
+  delay(1000);*/
   //if (rtc_get_reset_reason(0) == 5) { // STEREO COVOX
-  if (d) { // STEREO COVOX
+  //if (d) { // STEREO COVOX
+  if (channelsignalcount > 5) {
+    //detachInterrupt(STEREO_CHANNEL_SELECT);
     change_mode(STEREO);
   } else {
     change_mode(COVOX);
   }
   //change_mode(COVOX);
-
+  channelsignalcount = 0;
 }
 
 
@@ -367,16 +377,22 @@ void loop() {
   } // DSS
 
   #ifdef DEBUG
-  static uint32_t oldtime = 0, newtime = 0;
+  static uint32_t oldtime = 0, newtime = 0, oldchannelsignalcount = 0;
   newtime = micros();
   //if ( (newtime-oldtime) > 100000 ) {
   //if ( (newtime-oldtime) > 1000000 ) {
   if ( newtime > oldtime ) {
+	if ( (channelsignalcount - oldchannelsignalcount) > 10 ) {
+	  if (mode != STEREO) ESP.restart(); 
+    } else {
+	  //if (mode == STEREO) ESP.restart();
+	}
+    oldchannelsignalcount = channelsignalcount;
     //Serial.print(totalSampleCounter*4-totalSamplesPlayed); Serial.print(" / "); Serial.println(totalFifoInterruptCounter);
     //Serial.print(mode); Serial.print(" "); Serial.print(modeA); Serial.print(" "); Serial.print(modeB); Serial.print(" "); Serial.println(totalSamplesPlayed);
     //Serial.println(totalChannelInterruptCounter-last); last = totalChannelInterruptCounter;
     //Serial.println(millis());
-    Serial.print(millis()); Serial.print(" "); Serial.print(totalSampleCounter); Serial.print(" "); Serial.print(totalStereoTaskCounter); Serial.print(" "); Serial.println(mode);
+    Serial.print(millis()); Serial.print(" "); Serial.print(totalSampleCounter); Serial.print(" "); Serial.print(totalStereoTaskCounter); Serial.print(" "); Serial.print(channelsignalcount); Serial.print(" "); Serial.println(mode);
     //Serial.print(millis()); Serial.print(" "); Serial.print(back); Serial.print(" "); Serial.print(front); Serial.print(" "); Serial.print(totalFifoInterruptCounter); Serial.print(" "); Serial.println(debug);
     oldtime += 1000000;//oldtime = newtime;
   }
@@ -384,7 +400,7 @@ void loop() {
 
   if (mode != STEREO) { // don't autodetect COVOX or DSS in STEREO-mode
     static uint32_t dss_detect = 0;
-	if (REG_READ(GPIO_IN_REG) & (1<<STEREO_CHANNEL_SELECT)) ESP.restart();
+	//if (REG_READ(GPIO_IN_REG) & (1<<STEREO_CHANNEL_SELECT)) ESP.restart();
     if (mode == DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) dss_detect = millis();
     if (mode == DSS) if ((millis() - dss_detect) > 1000) change_mode(COVOX);
     if (mode != DSS) if (REG_READ(GPIO_IN_REG) & (1<<FIFOCLK)) change_mode(DSS);
