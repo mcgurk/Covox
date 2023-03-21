@@ -27,7 +27,7 @@ IO22 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 10 (FIFOFULL) (ACK) (DSS->PC)
 **StereoIn1Covox:** | 
 IO25 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 1 (Strobe_) (channel select PC->Covox)
 **I2S DAC:** |
-5V | VDD (use 5V if possible, more stable)
+5V | Vin (use 5V if possible, more stable)
 GND | Ground
 IO21 | WCLK
 IO33 | BLCK
