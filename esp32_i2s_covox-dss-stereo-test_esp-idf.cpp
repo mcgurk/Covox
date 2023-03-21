@@ -21,7 +21,7 @@ void loop(){
 #define EXTRA_GND 26
 
 //COVOX
-#define D0 4
+#define D0 26
 #define D1 13
 #define D2 14
 #define D3 27
@@ -31,6 +31,7 @@ void loop(){
 #define D7 23
 #define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
 #define STEREO_CHANNEL_SELECT 25
+#define STEREO_CHANNEL_SELECT_PULLUP 4
 
 //DSS
 #define FIFOCLK 19 // fifoclock, 17 (Select Printer_) (PC->DSS)
@@ -261,7 +262,8 @@ void change_mode(MODE new_mode) {
       xTaskCreatePinnedToCore(core0_task_covox, "core0_task_covox", 4096, NULL, 5, &task_handle_covox, 1); // create task_handle_covox (creates I2S_WS interrupt)
       i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_COVOX); // set sample rate
       i2s_start(I2S_NUM_0);
-      attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, RISING); // STEREO COVOX detection
+      //attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, RISING); // STEREO COVOX detection
+      attachInterrupt(STEREO_CHANNEL_SELECT, isr_channelselect, FALLING); // STEREO COVOX detection
       break;
     case DSS: // covox -> dss
       i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_DSS); // set sample rate
@@ -274,6 +276,7 @@ void change_mode(MODE new_mode) {
       i2s_start(I2S_NUM_0);
       xTaskCreatePinnedToCore(core0_task_covox_stereo, "core0_task_covox_stereo", 4096, NULL, 5, NULL, 0);
       attachInterrupt(I2S_WS, isr_sample_covox_stereo, RISING);
+	  pinMode(STEREO_CHANNEL_SELECT_PULLUP, OUTPUT); digitalWrite(STEREO_CHANNEL_SELECT_PULLUP, HIGH);
       break;
     default:
       break;
