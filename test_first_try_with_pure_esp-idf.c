@@ -1,14 +1,3 @@
-/* I2S Example
-
-    This example code will output 100Hz sine wave and triangle wave to 2-channel of I2S driver
-    Every 5 seconds, it will change bits_per_sample [16, 24, 32] for i2s data
-
-    This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-    Unless required by applicable law or agreed to in writing, this
-    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-    CONDITIONS OF ANY KIND, either express or implied.
-*/
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -40,7 +29,7 @@
 #define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
 TaskHandle_t myTaskHandle = NULL;
 
-#define SAMPLE_RATE     (14000)
+#define SAMPLE_RATE     (50000)
 #define I2S_NUM         (0)
 #define I2S_BCK_IO      (GPIO_NUM_33) //4)
 #define I2S_WS_IO       (GPIO_NUM_21) //(GPIO_NUM_5)
@@ -49,7 +38,7 @@ TaskHandle_t myTaskHandle = NULL;
 
 static const char* TAG = "mcgurk_DSS_system";
 
-uint32_t buf[256];
+uint32_t buf[1024];
 volatile uint32_t totalTaskCounter = 0;
 volatile uint32_t totalSampleCounter = 0;
 uint32_t totalSamplesPlayed = 0;
@@ -82,7 +71,7 @@ void core1_task( void * pvParameters ) {
 
 void IRAM_ATTR isr_dssfifo() {
 	static uint32_t out = 0;
-	uint16_t i = totalSampleCounter & 255;
+	//uint16_t i = totalSampleCounter & 255;
 	/*if (i&1) {// read new "out" only every other time
     if (fcnt > 0) {
       uint32_t g = fifo_buf[front++];
@@ -93,11 +82,13 @@ void IRAM_ATTR isr_dssfifo() {
     }*/
 	uint32_t reg = REG_READ(GPIO_IN_REG);
 	uint16_t s = (CONVERT_GPIOREG_TO_SAMPLE(reg)-128) << VOLUME;
-	//out = (s << 16) | s;
-	out = s;
+	uint16_t i = totalSampleCounter & 1023;
+	out = (s << 16) | s;
 	buf[i] = out;
-	if (i == 127) buffer_full = 1;
-	if (i == 255) buffer_full = 2;
+	//if (i == 127) buffer_full = 1;
+	//if (i == 255) buffer_full = 2;
+	if (i == 511) buffer_full = 1;
+	if (i == 1023) buffer_full = 2;
 	totalSampleCounter++;
 }
 
@@ -124,7 +115,7 @@ void app_main(void)
         .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                //Interrupt level 1
     };
     i2s_pin_config_t pin_config = {
-        .mck_io_num = I2S_PIN_NO_CHANGE,
+        .mck_io_num = 0, //I2S_PIN_NO_CHANGE,
         .bck_io_num = I2S_BCK_IO,
         .ws_io_num = I2S_WS_IO,
         .data_out_num = I2S_DO_IO,
@@ -155,8 +146,10 @@ void app_main(void)
 
     	if (buffer_full) {
     		size_t i2s_bytes_write;
-    		if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
-    		if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[128], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
+    		//if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
+    		//if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[128], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
+    		if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], 512*4, &i2s_bytes_write, portMAX_DELAY);
+    		if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[512], 512*4, &i2s_bytes_write, portMAX_DELAY);
     	    buffer_full = 0;
     	    totalSamplesPlayed += i2s_bytes_write/4;
     	}
@@ -169,7 +162,8 @@ void app_main(void)
             rtc_clk_cpu_freq_get_config(&conf);
     		printf("main core: %i, cpu speed: %u, cycles: %u, ",xPortGetCoreID(), conf.freq_mhz, xthal_get_ccount());
     		printf("totalSampleCounter: %u, ", totalSampleCounter);
-    		printf("totalSamplesPlayed: %u \n", totalSamplesPlayed);
+    		printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
+    		printf("difference: %u\n", totalSampleCounter-totalSamplesPlayed);
     	    oldtime += 240000000L;
     	}
 
