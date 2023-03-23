@@ -46,19 +46,21 @@ uint32_t totalSamplesPlayed = 0;
 volatile uint8_t buffer_full = 0;
 volatile uint8_t front = 0;
 volatile uint8_t back = 0;
-volatile uint8_t fifo_buf[256];
+volatile uint32_t fifo_buf[256];
 #define fcnt ((uint8_t)(back-front)) // 0-16
 
 void core1_task( void * pvParameters ) {
 	//printf("core1_task running on core: %i\n", xPortGetCoreID());
-	portDISABLE_INTERRUPTS();
+	//portDISABLE_INTERRUPTS();
 	while(1) {
 		register uint32_t a;
 		do { a = REG_READ(GPIO_IN_REG); } while (!(a & (1<<FIFOCLK))); // a = when channel select goes high
 		fifo_buf[back++] = a;
+		//back++;
 		if (fcnt == 16) GPIO.out_w1ts = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, HIGH);
 		while ((REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))); // while fifoclk pin is high
 		totalTaskCounter++;
+		//printf("a: %i\n", CONVERT_GPIOREG_TO_SAMPLE(a));
 	}
 	//vTaskDelay(100);
 }
@@ -130,6 +132,7 @@ void app_main(void)
     //ESP_LOGI(TAG, "set clock");
     //i2s_set_clk(I2S_NUM, SAMPLE_RATE, 16, 2);
     //ESP_LOGI(TAG, "write data");
+    //for (int i = 0; i< 100; i++) fifo_buf[i]=i;
 
 	PIN_TO_INPUT(D0); PIN_TO_INPUT(D1); PIN_TO_INPUT(D2); PIN_TO_INPUT(D3); PIN_TO_INPUT(D4); PIN_TO_INPUT(D5); PIN_TO_INPUT(D6); PIN_TO_INPUT(D7);
 	PIN_TO_INPUT(FIFOCLK); PIN_TO_OUTPUT(FIFOFULL); gpio_set_level(FIFOFULL, 0);
@@ -166,6 +169,10 @@ void app_main(void)
     		printf("totalSampleCounter: %u, ", totalSampleCounter);
     		printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
     		printf("difference: %u\n", totalSampleCounter-totalSamplesPlayed);
+			//for (int i = 0; i< 100; i++) printf("%i,", fifo_buf[i]);
+			//for (int i = 0; i< 100; i++) printf("%i,", CONVERT_GPIOREG_TO_SAMPLE(fifo_buf[i]));
+			//for (int i = 0; i< 20; i++) printf("%i,", buf[i]&255);
+			printf("\n");
     	    oldtime += 240000000L;
     	}
 
