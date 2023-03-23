@@ -61,6 +61,38 @@ volatile uint32_t debug = 0;
 
 #define BOOL_DSS (REG_READ(GPIO_IN_REG)&(1 << GPIO_DSS))
 
+i2s_config_t i2s_config_covox = {
+    .mode = I2S_MODE_MASTER | I2S_MODE_TX,
+    .sample_rate = SAMPLE_RATE_COVOX,
+    .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
+    .communication_format = I2S_COMM_FORMAT_STAND_I2S,
+    .dma_buf_count = 4,
+    .dma_buf_len = 512,
+    .use_apll = false,
+    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                //Interrupt level 1
+};
+
+i2s_config_t i2s_config_dss = {
+    .mode = I2S_MODE_MASTER | I2S_MODE_TX,
+    .sample_rate = SAMPLE_RATE_DSS,
+    .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
+    .communication_format = I2S_COMM_FORMAT_STAND_I2S,
+    .dma_buf_count = 2,
+    .dma_buf_len = 128,
+    .use_apll = false,
+    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                //Interrupt level 1
+};
+
+i2s_pin_config_t pin_config = {
+    .mck_io_num = I2S_PIN_NO_CHANGE,
+    .bck_io_num = I2S_BCK_IO,
+    .ws_io_num = I2S_WS_IO,
+    .data_out_num = I2S_DO_IO,
+    .data_in_num = I2S_DI_IO                                               //Not used
+};
+
 void dss_routine(void) {
 	while(1) {
 		register uint32_t a;
@@ -139,7 +171,8 @@ void change_mode(uint32_t new_mode) {
     		gpio_isr_handler_remove(I2S_WS_IO);
     		//vTaskDelete(task_handle_covox); //disable task
     		//detachInterrupt(I2S_WS); //disable i2s interrupt
-    		i2s_stop(I2S_NUM_0); //stop i2s
+    		//i2s_stop(I2S_NUM_0); //stop i2s
+    		i2s_driver_uninstall(I2S_NUM_0);
     		break;
     	case DSS:
     		gpio_set_level(GPIO_DSS, 0);
@@ -147,6 +180,7 @@ void change_mode(uint32_t new_mode) {
     		//vTaskDelete(task_handle_dss); //disable task
     		//detachInterrupt(I2S_WS); //disable i2s interrupt
     		i2s_stop(I2S_NUM_0); //stop i2s
+    		i2s_driver_uninstall(I2S_NUM_0);
     		break;
     	case STEREO:
     		//vTaskDelete(task_handle_stereo); //disable task
@@ -161,13 +195,17 @@ void change_mode(uint32_t new_mode) {
     	case COVOX: //dss -> covox
     		// I don't like this much... if I put COVOX to core0, DSS doesn't work after COVOX without crackling. so I must use core1 to COVOX:
     		//xTaskCreatePinnedToCore(core0_task_covox, "core0_task_covox", 4096, NULL, 5, &task_handle_covox, 1); // create task_handle_covox (creates I2S_WS interrupt)
-    		i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_COVOX); // set sample rate
-    		i2s_start(I2S_NUM_0);
+    	    i2s_driver_install(I2S_NUM, &i2s_config_covox, 0, NULL);
+    	    i2s_set_pin(I2S_NUM, &pin_config);
+    	    //i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_COVOX); // set sample rate
+    		//i2s_start(I2S_NUM_0);
     		gpio_isr_handler_add(I2S_WS_IO, isr_sample_covox, NULL);
     		break;
     	case DSS: // covox -> dss
-    		i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_DSS); // set sample rate
-    		i2s_start(I2S_NUM_0);
+    	    i2s_driver_install(I2S_NUM, &i2s_config_dss, 0, NULL);
+    	    i2s_set_pin(I2S_NUM, &pin_config);
+    		//i2s_set_sample_rates(I2S_NUM_0, SAMPLE_RATE_DSS); // set sample rate
+    		//i2s_start(I2S_NUM_0);
     		//xTaskCreatePinnedToCore(core0_task_dss, "core0_task_dss", 4096, NULL, 5, &task_handle_dss, 0); // create task_handle_dss
     		//attachInterrupt(I2S_WS, isr_sample_dss, RISING); // handles i2s samples
     		gpio_isr_handler_add(I2S_WS_IO, isr_dssfifo, NULL);
@@ -184,6 +222,8 @@ void change_mode(uint32_t new_mode) {
     		break;
 	}
 
+    gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
+    gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
 	mode = new_mode;
 	printf("New mode!: %i\n", mode);
 }
@@ -206,26 +246,9 @@ void change_mode(uint32_t new_mode) {
 void app_main(void)
 {
 
-    i2s_config_t i2s_config = {
-        .mode = I2S_MODE_MASTER | I2S_MODE_TX,
-        .sample_rate = SAMPLE_RATE_COVOX,
-        .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
-        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
-        .communication_format = I2S_COMM_FORMAT_STAND_I2S, //I2S_COMM_FORMAT_STAND_MSB,
-        .dma_buf_count = 2,
-        .dma_buf_len = 256,
-        .use_apll = false,
-        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                //Interrupt level 1
-    };
-    i2s_pin_config_t pin_config = {
-        .mck_io_num = I2S_PIN_NO_CHANGE,
-        .bck_io_num = I2S_BCK_IO,
-        .ws_io_num = I2S_WS_IO,
-        .data_out_num = I2S_DO_IO,
-        .data_in_num = I2S_DI_IO                                               //Not used
-    };
-    i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL);
-    i2s_set_pin(I2S_NUM, &pin_config);
+
+    //i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL);
+    //i2s_set_pin(I2S_NUM, &pin_config);
 
     printf("setup running on core: %i\n", xPortGetCoreID());
     xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
@@ -243,7 +266,7 @@ void app_main(void)
 	gpio_set_intr_type(I2S_WS_IO, GPIO_INTR_POSEDGE);
 	//gpio_isr_handler_add(I2S_WS_IO, isr_dssfifo, NULL);
     gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
-    gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
+    //gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
     gpio_hal_input_enable(&gpiohal, GPIO_DSS);
 
     ESP_LOGI(TAG, "log test");
