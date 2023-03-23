@@ -13,14 +13,14 @@
 #define DEBUG
 //#define EXTRA_GND 26
 
-#define D0 4
-#define D1 13
-#define D2 14
-#define D3 27
-#define D4 9
-#define D5 10
-#define D6 18
-#define D7 23
+#define D0 13 // white
+#define D1 14 // grey
+#define D2 27 // yellow
+#define D3 26 // brown
+#define D4  9 // blue
+#define D5 10 // purple
+#define D6 18 // pink
+#define D7 23 // green
 //#define FIFOFULL 10 // fifofull, 10 (ACK) (DSS->PC)
 //#define FIFOCLK 9 // fifoclock, 17 (Select Printer_) (PC->DSS)
 //#define STEREO_CHANNEL_SELECT 25
@@ -29,10 +29,10 @@
 #define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
 TaskHandle_t myTaskHandle = NULL;
 
-#define SAMPLE_RATE     (50000)
+#define SAMPLE_RATE     (96000)
 #define I2S_NUM         (0)
 #define I2S_BCK_IO      (GPIO_NUM_33) //4)
-#define I2S_WS_IO       (GPIO_NUM_21) //(GPIO_NUM_5)
+#define I2S_WS_IO       (GPIO_NUM_5)
 #define I2S_DO_IO       (GPIO_NUM_32) //18)
 #define I2S_DI_IO       (-1)
 
@@ -109,8 +109,8 @@ void app_main(void)
         .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
         .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
         .communication_format = I2S_COMM_FORMAT_STAND_I2S, //I2S_COMM_FORMAT_STAND_MSB,
-        .dma_buf_count = 4,
-        .dma_buf_len = 1024,
+        .dma_buf_count = 2,
+        .dma_buf_len = 256,
         .use_apll = false,
         .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                //Interrupt level 1
     };
