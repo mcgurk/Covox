@@ -409,8 +409,8 @@ void app_main(void)
 			uint32_t last = last_stereo_signal;
 			uint32_t now = esp_timer_get_time();
 			if ((now - last) > 1000000L) {
-				//change_mode(COVOX);
-				esp_restart();
+				change_mode(COVOX);
+				//esp_restart();
 			}
 		}
 		if (mode == DSS) {
@@ -426,3 +426,19 @@ void app_main(void)
 	}
 
 }
+
+/* LPT port pin 17 (fifoclk) to low
+debug
+n pin17.com
+a100
+mov dx,37a
+in al,dx
+or al,8             ; bit 4 high -> pin 17 low
+out dx,al
+ret
+
+rcx
+8
+w
+q
+*/
