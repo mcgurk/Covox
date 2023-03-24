@@ -139,7 +139,7 @@ buf[i] = (0x80<<24) | (s<<8); // IO26 = 0x80, IO25 = sample
 
  (for ESP32 internal DAC: Mono 2.5W Class D Audio Amplifier - PAM8302)
  
- ESP32 | LPT (D25)
+ ESP32 | amplifier
 --- | ---
 (**Amplifier:**) |
 5V | 2-5VDD
