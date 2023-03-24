@@ -1,6 +1,6 @@
 
 # Covox, Disnay Sound Source, Stereo in 1
-Trying to make lpt soundcard Covox with microcontroller
+Trying to make parallel port / LPT soundcard Covox with microcontroller
 
 ## Parts
 
