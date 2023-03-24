@@ -12,10 +12,10 @@ Trying to make parallel port / LPT soundcard Covox with microcontroller
 ESP32 | LPT (D25)
 --- | ---
 **Covox:** |
-IO26 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 2 (D0)
-IO13 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 3 (D1)
-IO14 ( $\colorbox{yellow}{{\color{yellow}{yellow}}}$ ) | 4 (D2)
-IO27 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 5 (D3)
+IO13 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 2 (D0)
+IO14 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 3 (D1)
+IO27 ( $\colorbox{yellow}{{\color{yellow}{yellow}}}$ ) | 4 (D2)
+IO26 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 5 (D3)
 IO9  ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | 6 (D4)
 IO10 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 7 (D5)
 IO18 ( $\colorbox{pink}{{\color{pink}{pink}}}$ ) | 8 (D6)
@@ -25,7 +25,7 @@ GND | GND (18-25)
 IO19 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 17 (FIFOCLK) (Select Printer_) (PC->DSS)
 IO22 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 10 (FIFOFULL) (ACK) (DSS->PC)
 **StereoIn1Covox:** | 
-IO25 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 1 (Strobe_) (channel select PC->Covox)
+IO4 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 1 (Strobe_) (channel select PC->Covox)
 &nbsp; | resistor between IO4 and IO25 for external pullup (I have 2.15kohm, 4.7kohm might work too)
 **I2S DAC:** |
 5V | Vin (use 5V if possible, more stable)
