@@ -4,8 +4,8 @@ Trying to make parallel port / LPT soundcard Covox with microcontroller
 
 ## Parts
 
-- ESP32-PICO-KIT with ESP32-PICO-D4 or ESP32 dev board or Wemos D1 mini ESP32
-- I2S DAC PCM5102A/GY-PCM5102 or I2S DAC amplifier MAX98357A (for ESP32 internal DAC: Mono 2.5W Class D Audio Amplifier - PAM8302)
+- ESP32
+- I2S DAC PCM5102A/GY-PCM5102 or I2S DAC amplifier MAX98357A
 
 ## Wiring
 
@@ -133,3 +133,6 @@ Note that the I/O GPIO pads are 0-19, 21-23, 25-27, 32-39, while the output GPIO
 // .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT
 buf[i] = (0x80<<24) | (s<<8); // IO26 = 0x80, IO25 = sample
 ```
+- ESP32-PICO-KIT with ESP32-PICO-D4 or ESP32 dev board or Wemos D1 mini ESP32
+
+ (for ESP32 internal DAC: Mono 2.5W Class D Audio Amplifier - PAM8302)
