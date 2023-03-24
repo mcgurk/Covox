@@ -24,7 +24,7 @@ GND | GND (18-25)
 **DSS:** | 
 IO19 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 17 (FIFOCLK) (Select Printer_) (PC->DSS)
 IO22 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 10 (FIFOFULL) (ACK) (DSS->PC)
-**StereoIn1Covox:** | 
+**Stereo-In-1:** | 
 IO4 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 1 (Strobe_) (channel select PC->Covox)
 &nbsp; | resistor between IO4 and IO25 for external pullup (I have 2.15kohm, 4.7kohm might work too)
 **I2S DAC:** |
