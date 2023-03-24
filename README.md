@@ -1,5 +1,5 @@
 
-# Covox, Disnay Sound Source, Stereo in 1
+# Covox, Disney Sound Source (DSS), Stereo in 1
 Trying to make parallel port / LPT soundcard Covox with microcontroller
 
 ## Parts
