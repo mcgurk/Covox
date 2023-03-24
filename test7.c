@@ -70,35 +70,35 @@ volatile uint32_t mode_change_flag = 0;
 volatile uint32_t debug = 0;
 
 i2s_config_t i2s_config_covox = {
-    .mode = I2S_MODE_MASTER | I2S_MODE_TX,
-    .sample_rate = SAMPLE_RATE_COVOX,
-    .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
-    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
-    .communication_format = I2S_COMM_FORMAT_STAND_I2S,
-    .dma_buf_count = 4,
-    .dma_buf_len = 512,
-    .use_apll = false,
-    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                //Interrupt level 1
+		.mode = I2S_MODE_MASTER | I2S_MODE_TX,
+		.sample_rate = SAMPLE_RATE_COVOX,
+		.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+		.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
+		.communication_format = I2S_COMM_FORMAT_STAND_I2S,
+		.dma_buf_count = 4,
+		.dma_buf_len = 512,
+		.use_apll = false,
+		.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                //Interrupt level 1
 };
 
 i2s_config_t i2s_config_dss = {
-    .mode = I2S_MODE_MASTER | I2S_MODE_TX,
-    .sample_rate = SAMPLE_RATE_DSS,
-    .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
-    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
-    .communication_format = I2S_COMM_FORMAT_STAND_I2S,
-    .dma_buf_count = 2,
-    .dma_buf_len = 128,
-    .use_apll = false,
-    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                //Interrupt level 1
+		.mode = I2S_MODE_MASTER | I2S_MODE_TX,
+		.sample_rate = SAMPLE_RATE_DSS,
+		.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+		.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
+		.communication_format = I2S_COMM_FORMAT_STAND_I2S,
+		.dma_buf_count = 2,
+		.dma_buf_len = 128,
+		.use_apll = false,
+		.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                //Interrupt level 1
 };
 
 i2s_pin_config_t pin_config = {
-    .mck_io_num = I2S_PIN_NO_CHANGE,
-    .bck_io_num = I2S_BCK_IO,
-    .ws_io_num = I2S_WS_IO,
-    .data_out_num = I2S_DO_IO,
-    .data_in_num = I2S_DI_IO                                               //Not used
+		.mck_io_num = I2S_PIN_NO_CHANGE,
+		.bck_io_num = I2S_BCK_IO,
+		.ws_io_num = I2S_WS_IO,
+		.data_out_num = I2S_DO_IO,
+		.data_in_num = I2S_DI_IO                                               //Not used
 };
 
 void covox_routine(void) {
@@ -144,41 +144,41 @@ void dss_routine(void) {
 
 void stereo_routine(void) {
 	while(1) {
-		  while (1) {
-			  //do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
-			  //do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
-			  uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
-			  const uint32_t gpio_reg = 0x3FF4403C, mask = (1<<STEREO_CHANNEL_SELECT), endmask = (1<<GPIO_STEREO);
-			  const uint32_t left_ptr = (uint32_t)&left;
-			  const uint32_t right_ptr = (uint32_t)&right;
-			  __asm__ __volatile__(
-					  "loop1: \n"
-					  //"memw \n"
-					  "l32i.n	%0, %3, 0 \n" // read left channel
-					  "bnone	%0, %4, loop1 \n" // if LOW, go back to start
-					  "bnone    %0, %5, end \n" // enable bit low, quit
-					  //"memw \n"
-					  //"l32i.n	%2, %3, 0 \n"
-					  //"bnone	%2, %4, loop1 \n" // if LOW, go back to start
-					  " \n"
-					  "loop2: \n"
-					  //"memw \n"
-					  "l32i.n	%1, %3, 0 \n" // read right channel
-					  "bany 	%1, %4, loop2 \n" // if HIGH, go back to start
-					  //"memw \n"
-					  "l32i.n	%2, %3, 0 \n" //!why?
-					  "bany	  %2, %4, loop2 \n" //!why? // if HIGH, go back to start
-					  //"memw \n"
-					  "s32i.n	%0, %6, 0 \n"
-					  //"memw \n"
-					  "s32i.n	%1, %7, 0 \n"
-					  "j loop1 \n"
-					  "end: \n"
-					  : "=&r" (temp_reg), "=&r" (temp_reg2), "=&r" (temp_reg3) \
-						: "a" (gpio_reg), "a" (mask), "a" (endmask), "a" (left_ptr), "a" (right_ptr) );
-			  totalTaskCounter++;
-			  return;
-		  }
+		while (1) {
+			//do { a = REG_READ(GPIO_IN_REG); } while (!(a&(1<<STEREO_CHANNEL_SELECT))); // a = when channel select is high
+			//do { b = REG_READ(GPIO_IN_REG); } while (b&(1<<STEREO_CHANNEL_SELECT)); // b = when channel select is low
+			uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
+			const uint32_t gpio_reg = 0x3FF4403C, mask = (1<<STEREO_CHANNEL_SELECT), endmask = (1<<GPIO_STEREO);
+			const uint32_t left_ptr = (uint32_t)&left;
+			const uint32_t right_ptr = (uint32_t)&right;
+			__asm__ __volatile__(
+					"loop1: \n"
+					//"memw \n"
+					"l32i.n	%0, %3, 0 \n" // read left channel
+					"bnone	%0, %4, loop1 \n" // if LOW, go back to start
+					"bnone    %0, %5, end \n" // enable bit low, quit
+					//"memw \n"
+					//"l32i.n	%2, %3, 0 \n"
+					//"bnone	%2, %4, loop1 \n" // if LOW, go back to start
+					" \n"
+					"loop2: \n"
+					//"memw \n"
+					"l32i.n	%1, %3, 0 \n" // read right channel
+					"bany 	%1, %4, loop2 \n" // if HIGH, go back to start
+					//"memw \n"
+					"l32i.n	%2, %3, 0 \n" //!why?
+					"bany	  %2, %4, loop2 \n" //!why? // if HIGH, go back to start
+					//"memw \n"
+					"s32i.n	%0, %6, 0 \n"
+					//"memw \n"
+					"s32i.n	%1, %7, 0 \n"
+					"j loop1 \n"
+					"end: \n"
+					: "=&r" (temp_reg), "=&r" (temp_reg2), "=&r" (temp_reg3) \
+					  : "a" (gpio_reg), "a" (mask), "a" (endmask), "a" (left_ptr), "a" (right_ptr) );
+			totalTaskCounter++;
+			return;
+		}
 	}
 }
 
@@ -214,8 +214,8 @@ void IRAM_ATTR isr_dssfifo() {
 			uint16_t s = (CONVERT_GPIOREG_TO_SAMPLE(reg)-128) << VOLUME;
 			out = (s << 16) | s;
 		} else out = 0;
-    	if (fcnt < 16) GPIO.out_w1tc = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, LOW);
-    }
+		if (fcnt < 16) GPIO.out_w1tc = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, LOW);
+	}
 	buf[i] = out;
 	if (i == 127) buffer_full = 1;
 	if (i == 255) buffer_full = 2;
@@ -245,23 +245,23 @@ void change_mode(uint32_t new_mode) {
 	mode = NONE;
 
 	switch (old_mode) { //disable current mode
-    	case COVOX:
-    		gpio_set_level(GPIO_COVOX, 0);
-    		i2s_driver_uninstall(I2S_NUM_0);
-    		break;
-    	case DSS:
-    		gpio_set_level(GPIO_DSS, 0);
-    		gpio_isr_handler_remove(I2S_WS_IO);
-    		i2s_driver_uninstall(I2S_NUM_0);
-    		break;
-    	case STEREO:
-    		gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 0);
-    		gpio_set_level(GPIO_STEREO, 0);
-    		gpio_isr_handler_remove(I2S_WS_IO);
-    		i2s_driver_uninstall(I2S_NUM_0);
-    		break;
-    	default:
-    		break;
+	case COVOX:
+		gpio_set_level(GPIO_COVOX, 0);
+		i2s_driver_uninstall(I2S_NUM_0);
+		break;
+	case DSS:
+		gpio_set_level(GPIO_DSS, 0);
+		gpio_isr_handler_remove(I2S_WS_IO);
+		i2s_driver_uninstall(I2S_NUM_0);
+		break;
+	case STEREO:
+		gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 0);
+		gpio_set_level(GPIO_STEREO, 0);
+		gpio_isr_handler_remove(I2S_WS_IO);
+		i2s_driver_uninstall(I2S_NUM_0);
+		break;
+	default:
+		break;
 	}
 
 	// clean up
@@ -272,46 +272,46 @@ void change_mode(uint32_t new_mode) {
 	buffer_full = 0;
 
 	switch (new_mode) {
-    	case COVOX:
-    	    i2s_driver_install(I2S_NUM, &i2s_config_covox, 0, NULL);
-    	    i2s_set_pin(I2S_NUM, &pin_config);
-    		gpio_set_level(GPIO_COVOX, 1);
-    		break;
-    	case DSS:
-    	    i2s_driver_install(I2S_NUM, &i2s_config_dss, 0, NULL);
-    	    i2s_set_pin(I2S_NUM, &pin_config);
-    		gpio_isr_handler_add(I2S_WS_IO, isr_dssfifo, NULL);
-    		gpio_set_level(GPIO_DSS, 1);
-    		break;
-    	case STEREO:
-    		gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 1);
-    		i2s_driver_install(I2S_NUM, &i2s_config_covox, 0, NULL);
-    		i2s_set_pin(I2S_NUM, &pin_config);
-    		//pinMode(STEREO_CHANNEL_SELECT_PULLUP, OUTPUT); digitalWrite(STEREO_CHANNEL_SELECT_PULLUP, HIGH);
-    		gpio_isr_handler_add(I2S_WS_IO, isr_sample_stereo, NULL);
-    		gpio_set_level(GPIO_STEREO, 1);
-    		break;
-    	default:
-    		break;
+	case COVOX:
+		i2s_driver_install(I2S_NUM, &i2s_config_covox, 0, NULL);
+		i2s_set_pin(I2S_NUM, &pin_config);
+		gpio_set_level(GPIO_COVOX, 1);
+		break;
+	case DSS:
+		i2s_driver_install(I2S_NUM, &i2s_config_dss, 0, NULL);
+		i2s_set_pin(I2S_NUM, &pin_config);
+		gpio_isr_handler_add(I2S_WS_IO, isr_dssfifo, NULL);
+		gpio_set_level(GPIO_DSS, 1);
+		break;
+	case STEREO:
+		gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 1);
+		i2s_driver_install(I2S_NUM, &i2s_config_covox, 0, NULL);
+		i2s_set_pin(I2S_NUM, &pin_config);
+		//pinMode(STEREO_CHANNEL_SELECT_PULLUP, OUTPUT); digitalWrite(STEREO_CHANNEL_SELECT_PULLUP, HIGH);
+		gpio_isr_handler_add(I2S_WS_IO, isr_sample_stereo, NULL);
+		gpio_set_level(GPIO_STEREO, 1);
+		break;
+	default:
+		break;
 	}
 
-    gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
-    gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
+	gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
+	gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
 	mode = new_mode;
 	printf("New mode!: %i\n", mode);
 }
 
 #define PIN_TO_INPUT(pin) \
-	gpio_reset_pin(pin); \
-	gpio_pad_select_gpio(pin); \
-	gpio_set_direction(pin, GPIO_MODE_INPUT); \
-    gpio_pulldown_dis(pin); \
-    gpio_pullup_dis(pin);
+		gpio_reset_pin(pin); \
+		gpio_pad_select_gpio(pin); \
+		gpio_set_direction(pin, GPIO_MODE_INPUT); \
+		gpio_pulldown_dis(pin); \
+		gpio_pullup_dis(pin);
 
 #define PIN_TO_OUTPUT(pin) \
-	gpio_reset_pin(pin); \
-	gpio_pad_select_gpio(pin); \
-	gpio_set_direction(pin, GPIO_MODE_OUTPUT);
+		gpio_reset_pin(pin); \
+		gpio_pad_select_gpio(pin); \
+		gpio_set_direction(pin, GPIO_MODE_OUTPUT);
 
 #define ms_to_cycles(a) 160000000L/1000L*a
 #define cycles xthal_get_ccount
@@ -326,13 +326,13 @@ void app_main(void)
 	PIN_TO_OUTPUT(GPIO_DSS); gpio_set_level(GPIO_DSS, 0);
 	PIN_TO_OUTPUT(GPIO_STEREO); gpio_set_level(GPIO_STEREO, 0);
 
-    printf("setup running on core: %i\n", xPortGetCoreID());
-    xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
+	printf("setup running on core: %i\n", xPortGetCoreID());
+	xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
 
-    //ESP_LOGI(TAG, "set clock");
-    //i2s_set_clk(I2S_NUM, SAMPLE_RATE, 16, 2);
-    //ESP_LOGI(TAG, "write data");
-    //for (int i = 0; i< 100; i++) fifo_buf[i]=i;
+	//ESP_LOGI(TAG, "set clock");
+	//i2s_set_clk(I2S_NUM, SAMPLE_RATE, 16, 2);
+	//ESP_LOGI(TAG, "write data");
+	//for (int i = 0; i< 100; i++) fifo_buf[i]=i;
 
 	gpio_install_isr_service(0);
 	gpio_set_intr_type(I2S_WS_IO, GPIO_INTR_POSEDGE);
@@ -340,89 +340,89 @@ void app_main(void)
 	gpio_set_intr_type(STEREO_CHANNEL_SELECT, GPIO_INTR_POSEDGE);
 	gpio_isr_handler_add(FIFOCLK, isr_dss_detect, NULL);
 	gpio_isr_handler_add(STEREO_CHANNEL_SELECT, isr_stereo_detect, NULL);
-    gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
-    //gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
-    gpio_hal_input_enable(&gpiohal, GPIO_COVOX);
-    gpio_hal_input_enable(&gpiohal, GPIO_DSS);
-    gpio_hal_input_enable(&gpiohal, GPIO_STEREO);
+	gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
+	//gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
+	gpio_hal_input_enable(&gpiohal, GPIO_COVOX);
+	gpio_hal_input_enable(&gpiohal, GPIO_DSS);
+	gpio_hal_input_enable(&gpiohal, GPIO_STEREO);
 
-    ESP_LOGI(TAG, "log test");
+	ESP_LOGI(TAG, "log test");
 
-    change_mode(COVOX);
-    //i2s_set_clk(I2S_NUM, SAMPLE_RATE_DSS, 16, 2);
-    //mode = DSS;
+	change_mode(COVOX);
+	//i2s_set_clk(I2S_NUM, SAMPLE_RATE_DSS, 16, 2);
+	//mode = DSS;
 	//i2s_driver_install(I2S_NUM, &i2s_config_covox, 0, NULL);
 	//i2s_set_pin(I2S_NUM, &pin_config);
-    //change_mode(COVOX);
-    //vTaskDelay(1000 / portTICK_RATE_MS);
+	//change_mode(COVOX);
+	//vTaskDelay(1000 / portTICK_RATE_MS);
 
-    while (1) {
+	while (1) {
 
 		size_t i2s_bytes_write;
-    	if ((mode == DSS) && buffer_full) {
-    	//if (buffer_full) {
-    		if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
-    		if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[128], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
-    	    buffer_full = 0;
-    	    totalSamplesPlayed += i2s_bytes_write/4;
-       	}
-    	if ((mode != DSS) && buffer_full) {
-    		if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], 1024*4, &i2s_bytes_write, portMAX_DELAY);
-    		if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[1024], 1024*4, &i2s_bytes_write, portMAX_DELAY);
-    	    buffer_full = 0;
-    	    totalSamplesPlayed += i2s_bytes_write/4;
-       	}
+		if ((mode == DSS) && buffer_full) {
+			//if (buffer_full) {
+			if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
+			if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[128], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
+			buffer_full = 0;
+			totalSamplesPlayed += i2s_bytes_write/4;
+		}
+		if ((mode != DSS) && buffer_full) {
+			if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], 1024*4, &i2s_bytes_write, portMAX_DELAY);
+			if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[1024], 1024*4, &i2s_bytes_write, portMAX_DELAY);
+			buffer_full = 0;
+			totalSamplesPlayed += i2s_bytes_write/4;
+		}
 
-    	// debug:
-    	static uint32_t oldtime = 0, newtime = 0;
-    	//newtime = xthal_get_ccount();
-    	newtime = esp_timer_get_time();
-    	if ( (newtime - oldtime) < 2000000000L ) {
-        	rtc_cpu_freq_config_t conf;
-            rtc_clk_cpu_freq_get_config(&conf);
-    		//printf("main core: %i, cpu speed: %u, cycles: %u, ",xPortGetCoreID(), conf.freq_mhz, xthal_get_ccount());
-    		//printf("main core: %i, cpu speed: %u, ",xPortGetCoreID(), conf.freq_mhz);
-    		printf("cpu speed: %u, ", conf.freq_mhz);
-    		//printf("debug: %u, ", debug);
-    		//printf("BOOL_COVOX: %u, ", BOOL_COVOX);
-    		//printf("BOOL_DSS: %u, ", BOOL_DSS);
-    		printf("FIFOCLK: %u, ", (REG_READ(GPIO_IN_REG)>>FIFOCLK)&1);
-    		printf("esp_timer_get_time(): %u, ", newtime);
-    		printf("last_stereo: %u, ", newtime-last_stereo_signal);
-    		printf("last_dss: %u, ", newtime-last_dss_signal);
-    		//printf("stereo_detect_count: %u, ", stereo_detect_count);
-    		printf("mode: %u, ", mode);
-    		//printf("totalTaskCounter: %u, ", totalTaskCounter);
-    		//printf("totalSampleCounter: %u, ", totalSampleCounter);
-    		//printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
-    		//printf("difference: %u\n", totalSampleCounter-totalSamplesPlayed);
-    		printf("\n");
-    	    oldtime += 1000000; //ms_to_cycles(1000);
+		// debug:
+		static uint32_t oldtime = 0, newtime = 0;
+		//newtime = xthal_get_ccount();
+		newtime = esp_timer_get_time();
+		if ( (newtime - oldtime) < 2000000000L ) {
+			rtc_cpu_freq_config_t conf;
+			rtc_clk_cpu_freq_get_config(&conf);
+			//printf("main core: %i, cpu speed: %u, cycles: %u, ",xPortGetCoreID(), conf.freq_mhz, xthal_get_ccount());
+			//printf("main core: %i, cpu speed: %u, ",xPortGetCoreID(), conf.freq_mhz);
+			printf("cpu speed: %u, ", conf.freq_mhz);
+			//printf("debug: %u, ", debug);
+			//printf("BOOL_COVOX: %u, ", BOOL_COVOX);
+			//printf("BOOL_DSS: %u, ", BOOL_DSS);
+			printf("FIFOCLK: %u, ", (REG_READ(GPIO_IN_REG)>>FIFOCLK)&1);
+			printf("esp_timer_get_time(): %u, ", newtime);
+			printf("last_stereo: %u, ", newtime-last_stereo_signal);
+			printf("last_dss: %u, ", newtime-last_dss_signal);
+			//printf("stereo_detect_count: %u, ", stereo_detect_count);
+			printf("mode: %u, ", mode);
+			//printf("totalTaskCounter: %u, ", totalTaskCounter);
+			//printf("totalSampleCounter: %u, ", totalSampleCounter);
+			//printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
+			//printf("difference: %u\n", totalSampleCounter-totalSamplesPlayed);
+			printf("\n");
+			oldtime += 1000000; //ms_to_cycles(1000);
 
-    	}
+		}
 
-    	if (mode_change_flag) {
-    		change_mode(mode_change_flag);
-    		mode_change_flag = NONE;
-    	}
-    	if (mode == STEREO) {
-    		uint32_t last = last_stereo_signal;
-    		uint32_t now = esp_timer_get_time();
-    		if ((now - last) > 1000000L) {
-    			//change_mode(COVOX);
-    			esp_restart();
-    		}
-    	}
-    	if (mode == DSS) {
-    		uint32_t last = last_dss_signal;
-    		uint32_t now = esp_timer_get_time();
-    		if ((now - last) > 2*1000000L)
-    			change_mode(COVOX);
-    	}
+		if (mode_change_flag) {
+			change_mode(mode_change_flag);
+			mode_change_flag = NONE;
+		}
+		if (mode == STEREO) {
+			uint32_t last = last_stereo_signal;
+			uint32_t now = esp_timer_get_time();
+			if ((now - last) > 1000000L) {
+				//change_mode(COVOX);
+				esp_restart();
+			}
+		}
+		if (mode == DSS) {
+			uint32_t last = last_dss_signal;
+			uint32_t now = esp_timer_get_time();
+			if ((now - last) > 2*1000000L)
+				change_mode(COVOX);
+		}
 
-    	vTaskDelay(5);
-    	//vTaskDelay(1000/portTICK_RATE_MS);
+		vTaskDelay(5);
+		//vTaskDelay(1000/portTICK_RATE_MS);
 
-    }
+	}
 
 }
