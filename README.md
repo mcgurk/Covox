@@ -30,7 +30,7 @@ IO4 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 1 (Strobe_) (channel select
 **I2S DAC:** |
 5V | Vin (use 5V if possible, more stable)
 GND | Ground
-IO21 | WCLK
+IO5 | WCLK
 IO33 | BLCK
 IO32 | DATA
 GND | SCK (if GY-PCM5102)
