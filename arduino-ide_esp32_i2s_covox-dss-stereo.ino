@@ -26,9 +26,9 @@
 #define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 
 // I2S:
-#define I2S_WS 5 // 19
-#define I2S_SCK 33 // 22
-#define I2S_SD 32 //21
+#define I2S_WS 5
+#define I2S_SCK 33
+#define I2S_SD 32
 #define SAMPLE_RATE_DSS 14000
 #define SAMPLE_RATE_COVOX 96000
 
