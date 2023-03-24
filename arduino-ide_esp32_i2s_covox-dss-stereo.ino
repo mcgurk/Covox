@@ -1,3 +1,6 @@
+// Not perfect sollution for Stereo-in-1. Interrupts cannot be disabled permanently.
+// Covox and DSS should work
+
 #include "driver/i2s.h"
 #include "rom/rtc.h"
 
@@ -28,7 +31,6 @@
 #define I2S_SD 32 //21
 #define SAMPLE_RATE_DSS 14000
 #define SAMPLE_RATE_COVOX 96000
-//#define SAMPLE_RATE_COVOX 14000
 
 enum MODE { NONE = 0, COVOX = 1, DSS = 2, STEREO = 3 };
 
