@@ -41,7 +41,7 @@ GND | Ground
 IO25 | Audio In-
 IO26 | Audio In+
 
-\* = IO9 and IO10 is only usable with ESP32-PICO-KIT (ESP32-PICO-D4)
+\* = IO9 and IO10 is only usable with ESP32-PICO-KIT (ESP32-PICO-D4) (with ESP32-WROOM-32 use 16 and 17)
 
 ## Links
 - https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
