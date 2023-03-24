@@ -3,19 +3,19 @@
 
 #define VOLUME 4 // 0 min, 8 max
 #define DEBUG
-#define EXTRA_GND 26
+//#define EXTRA_GND 26
 
 //COVOX
-#define D0 4
-#define D1 13
-#define D2 14
-#define D3 27
-#define D4 9
-#define D5 10
-#define D6 18
-#define D7 23
+#define D0 13 // white
+#define D1 14 // grey
+#define D2 27 // yellow
+#define D3 26 // brown
+#define D4  9 // blue
+#define D5 10 // purple
+#define D6 18 // pink
+#define D7 23 // green
 #define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
-#define STEREO_CHANNEL_SELECT 25
+#define STEREO_CHANNEL_SELECT 4
 
 //DSS
 #define FIFOCLK 19 // fifoclock, 17 (Select Printer_) (PC->DSS)
@@ -23,7 +23,7 @@
 #define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 
 // I2S:
-#define I2S_WS 21 // 19
+#define I2S_WS 5 // 19
 #define I2S_SCK 33 // 22
 #define I2S_SD 32 //21
 #define SAMPLE_RATE_DSS 14000
@@ -282,7 +282,7 @@ void setup() {
   pinMode(FIFOCLK, INPUT); // fifoclock, 17 (Select Printer_) (PC->DSS)
   pinMode(FIFOFULL, OUTPUT); digitalWrite(FIFOFULL, LOW); // fifofull, 10 (ACK) (DSS->PC)
   pinMode(STEREO_CHANNEL_SELECT, INPUT_PULLUP); // LPT pin 1 (_strobe)
-  pinMode(EXTRA_GND, OUTPUT); digitalWrite(EXTRA_GND, LOW); // just another GND
+  //pinMode(EXTRA_GND, OUTPUT); digitalWrite(EXTRA_GND, LOW); // just another GND
 
   #ifdef DEBUG
   Serial.begin(115200);
