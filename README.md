@@ -16,8 +16,8 @@ IO13 ( $\colorbox{white}{{\color{white}{white}}}$ ) | 2 (D0)
 IO14 ( $\colorbox{gray}{{\color{gray}{gray}}}$ ) | 3 (D1)
 IO27 ( $\colorbox{yellow}{{\color{yellow}{yellow}}}$ ) | 4 (D2)
 IO26 ( $\colorbox{brown}{{\color{brown}{brown}}}$ ) | 5 (D3)
-IO9  ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | 6 (D4)
-IO10 ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 7 (D5)
+IO9*  ( $\colorbox{blue}{{\color{blue}{blue}}}$ ) | 6 (D4)
+IO10* ( $\colorbox{purple}{{\color{purple}{purple}}}$ ) | 7 (D5)
 IO18 ( $\colorbox{pink}{{\color{pink}{pink}}}$ ) | 8 (D6)
 IO23 ( $\colorbox{green}{{\color{green}{green}}}$ ) | 9 (D7)
 GND | GND (18-25)
@@ -40,6 +40,8 @@ GND | SCK (if GY-PCM5102)
 GND | Ground
 IO25 | Audio In-
 IO26 | Audio In+
+
+* = IO9 and IO10 is only usable with ESP32-PICO-KIT (ESP32-PICO-D4)
 
 ## Links
 - https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
