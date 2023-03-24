@@ -34,12 +34,6 @@ IO5 | WCLK
 IO33 | BLCK
 IO32 | DATA
 GND | SCK (if GY-PCM5102)
---- | ---
-(**Amplifier:**) |
-5V | 2-5VDD
-GND | Ground
-IO25 | Audio In-
-IO26 | Audio In+
 
 \* = IO9 and IO10 is only usable with ESP32-PICO-KIT (ESP32-PICO-D4) (with ESP32-WROOM-32 use 16 and 17)
 
