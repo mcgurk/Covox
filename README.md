@@ -138,3 +138,11 @@ buf[i] = (0x80<<24) | (s<<8); // IO26 = 0x80, IO25 = sample
 - ESP32-PICO-KIT with ESP32-PICO-D4 or ESP32 dev board or Wemos D1 mini ESP32
 
  (for ESP32 internal DAC: Mono 2.5W Class D Audio Amplifier - PAM8302)
+ 
+ ESP32 | LPT (D25)
+--- | ---
+(**Amplifier:**) |
+5V | 2-5VDD
+GND | Ground
+IO25 | Audio In-
+IO26 | Audio In+
