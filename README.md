@@ -68,7 +68,7 @@ lpt_dac = disney, covox, ston1, (or none/off)
 ## Disney Sound Source / DSS
 
 #### ESP32
-- Cannot use interrupts, they are too slow. Dedicate another core (core0) for bitbanging FIFOCLK signal.
+- Cannot use interrupts, they are too slow. Dedicate another core for bitbanging FIFOCLK signal.
 - https://github.com/MacLeod-D/ESp32-Fast-external-IRQs
 - Use I2S WCLK for unload buffer interrupt
 - DAC doesn't work with 7kHz so double samples to 14kHz
