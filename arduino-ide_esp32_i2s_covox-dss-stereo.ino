@@ -1,4 +1,4 @@
-// Not perfect sollution for Stereo-in-1. Interrupts cannot be disabled permanently.
+// Not perfect sollution for Stereo-in-1. Interrupts cannot be disabled permanently in Arduino IDE.
 // Covox and DSS should work
 
 #include "driver/i2s.h"
