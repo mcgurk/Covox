@@ -74,6 +74,7 @@ volatile uint32_t left, right;
 volatile uint32_t last_dss_signal = 0;
 volatile uint32_t last_stereo_signal = 0;
 volatile uint32_t mode_change_flag = 0;
+volatile uint32_t stereocount = 0;
 volatile uint32_t debug = 0;
 
 i2s_config_t i2s_config_covox = {
@@ -145,7 +146,7 @@ void dss_routine(void) {
 			a = REG_READ(GPIO_IN_REG);
 			if ( !(a&(1 << GPIO_DSS)) ) return;
 		} while ((a & (1<<FIFOCLK))); // while fifoclk pin is high
-		totalTaskCounter++;
+		//totalTaskCounter++;
 	}
 }
 
@@ -230,25 +231,22 @@ void IRAM_ATTR isr_dssfifo() {
 }
 
 void IRAM_ATTR isr_stereo_detect() {
-	static uint32_t filter = 0;
+	//static uint32_t filter = 0;
 	last_stereo_signal = esp_timer_get_time();
+	stereocount++;
 	//if (mode == COVOX) {
-	if (mode != STEREO) {
+	/*if (mode != STEREO) {
 		filter++;
 		if (filter > 4) {
 			mode_change_flag = STEREO;
 			filter = 0;
 		}
-	} else filter = 0;
+	} else filter = 0;*/
 }
 
 void IRAM_ATTR isr_dss_detect() {
-	//if ( !(REG_READ(GPIO_IN_REG)&FIFOCLK) ) last_dss_signal = esp_timer_get_time(); // FIFOCLK goes low, take timestamp
-	//if ( (mode != STEREO) && (REG_READ(GPIO_IN_REG)&FIFOCLK) ) change_mode(DSS);
-	last_dss_signal = esp_timer_get_time();
-	//if ( (REG_READ(GPIO_IN_REG)&FIFOCLK) && (mode == COVOX) ) mode_change_flag = DSS; // if FIFOCLK high -> DSS
-	//if ( (REG_READ(GPIO_IN_REG)&FIFOCLK) && (mode != DSS) ) mode_change_flag = DSS; // if FIFOCLK goes high -> DSS
-	//if ( (REG_READ(GPIO_IN_REG)&FIFOCLK) ) mode_change_flag = DSS; // if FIFOCLK goes high -> DSS
+	if ( !(REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) last_dss_signal = esp_timer_get_time();
+	//if ( (REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) && (mode != DSS) ) mode_change_flag(DSS);
 }
 
 void change_mode(uint32_t new_mode) {
@@ -333,7 +331,7 @@ void app_main(void)
 
 	PIN_TO_INPUT(D0); PIN_TO_INPUT(D1); PIN_TO_INPUT(D2); PIN_TO_INPUT(D3); PIN_TO_INPUT(D4); PIN_TO_INPUT(D5); PIN_TO_INPUT(D6); PIN_TO_INPUT(D7);
 	PIN_TO_INPUT(FIFOCLK); PIN_TO_OUTPUT(FIFOFULL); gpio_set_level(FIFOFULL, 0);
-	PIN_TO_INPUT(STEREO_CHANNEL_SELECT); PIN_TO_OUTPUT(STEREO_CHANNEL_SELECT_PULLUP); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 1);
+	PIN_TO_INPUT(STEREO_CHANNEL_SELECT); PIN_TO_OUTPUT(STEREO_CHANNEL_SELECT_PULLUP); gpio_pulldown_en(STEREO_CHANNEL_SELECT); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 1);
 	PIN_TO_OUTPUT(GPIO_COVOX); gpio_set_level(GPIO_COVOX, 0);
 	PIN_TO_OUTPUT(GPIO_DSS); gpio_set_level(GPIO_DSS, 0);
 	PIN_TO_OUTPUT(GPIO_STEREO); gpio_set_level(GPIO_STEREO, 0);
@@ -344,11 +342,10 @@ void app_main(void)
 	//ESP_LOGI(TAG, "set clock");
 	//i2s_set_clk(I2S_NUM, SAMPLE_RATE, 16, 2);
 	//ESP_LOGI(TAG, "write data");
-	//for (int i = 0; i< 100; i++) fifo_buf[i]=i;
 
 	gpio_install_isr_service(0);
 	gpio_set_intr_type(I2S_WS_IO, GPIO_INTR_POSEDGE);
-	gpio_set_intr_type(FIFOCLK, GPIO_INTR_NEGEDGE);
+	gpio_set_intr_type(FIFOCLK, GPIO_INTR_ANYEDGE);
 	gpio_set_intr_type(STEREO_CHANNEL_SELECT, GPIO_INTR_POSEDGE);
 	gpio_isr_handler_add(FIFOCLK, isr_dss_detect, NULL);
 	gpio_isr_handler_add(STEREO_CHANNEL_SELECT, isr_stereo_detect, NULL);
@@ -395,9 +392,9 @@ void app_main(void)
 			//printf("main core: %i, cpu speed: %u, cycles: %u, ",xPortGetCoreID(), conf.freq_mhz, xthal_get_ccount());
 			//printf("main core: %i, cpu speed: %u, ",xPortGetCoreID(), conf.freq_mhz);
 			printf("cpu speed: %u, ", conf.freq_mhz);
-			printf("debug: %u, ", debug);
+			//printf("debug: %u, ", debug);
 			//printf("BOOL_COVOX: %u, ", BOOL_COVOX);
-			//printf("BOOL_DSS: %u, ", BOOL_DSS);
+			printf("stereocount: %u, ", stereocount);
 			printf("FIFOCLK: %u, ", (REG_READ(GPIO_IN_REG)>>FIFOCLK)&1);
 			printf("esp_timer_get_time(): %u, ", newtime);
 			printf("last_stereo: %u, ", newtime-last_stereo_signal);
@@ -425,17 +422,22 @@ void app_main(void)
 				//esp_restart();
 			}
 		}
+		static uint32_t stereooldtime = 0, stereonewtime = 0;
+		stereonewtime = esp_timer_get_time();
+		if ( (stereonewtime - stereooldtime) < 2000000000L ) {
+			if ( stereocount > 500 ) change_mode(STEREO); //100000, 30khz, > 3000
+			stereooldtime += 100000; //400000, duke3d < 500
+			stereocount = 0;
+		}
 		if ( (mode == DSS) && !(REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) {
 			uint32_t last = last_dss_signal; // time when last falling edge happened
 			uint32_t now = esp_timer_get_time();
 			if ((now - last) > 1000000L) // if FIFOCLK has been down 1s
 				change_mode(COVOX);
-				//debug++;
 		}
-		//if ( (mode != STEREO) && (REG_READ(GPIO_IN_REG)&FIFOCLK) ) {
 		if ( (mode != STEREO) && (REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) change_mode(DSS);
 
-		vTaskDelay(5);
+		vTaskDelay(1);
 		//vTaskDelay(1000/portTICK_RATE_MS);
 
 	}
