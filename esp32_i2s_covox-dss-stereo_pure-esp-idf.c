@@ -432,7 +432,7 @@ void app_main(void)
 		if ( (mode == DSS) && !(REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) {
 			uint32_t last = last_dss_signal; // time when last falling edge happened
 			uint32_t now = esp_timer_get_time();
-			if ((now - last) > 1000000L) // if FIFOCLK has been down 1s
+			if ((now - last) > 100000L) // if FIFOCLK has been down 0,1s
 				change_mode(COVOX);
 		}
 		if ( (mode != STEREO) && (REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) change_mode(DSS);
