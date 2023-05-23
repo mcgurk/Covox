@@ -141,4 +141,5 @@ GND | Ground
 IO25 | Audio In-
 IO26 | Audio In+
 
-🔴🟢🟤🟡⚪🔵🟣🟠
+https://emojipedia.org/
+🔴🟢🟤🟡⚪🔵🟣🟠🌸🐺⚫
