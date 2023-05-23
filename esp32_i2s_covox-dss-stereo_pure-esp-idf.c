@@ -1,11 +1,15 @@
 /*
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/
 https://dl.espressif.com/dl/esp-idf/?idf=4.4
+Espressif-IDE 2.9.1 with ESP-IDF v5.0.1 (1GB) / espressif-ide-setup-2.9.1-with-esp-idf-5.0.1.exe
+New: Espressif IDF Project
+Name: covox
+Target: ESP32
 Component config -> ESP System settings:
+ CPU frequency: 240MHz (default: 160MHz)
  Also watch CPU1 tick interrupt: off (default on)
  Watch CPU1 Idle Task: off (default on)
 Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
-Component config -> ESP32-specific -> CPU frequency: 240MHz (default: 160MHz)
 */
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
