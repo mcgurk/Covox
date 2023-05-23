@@ -3,7 +3,6 @@
 Trying to make parallel port / LPT soundcard Covox with microcontroller
 
 ## Parts
-🔴
 
 - ESP32
 - I2S DAC (e.g. PCM5102A/GY-PCM5102 or I2S DAC amplifier MAX98357A)
@@ -141,3 +140,5 @@ buf[i] = (0x80<<24) | (s<<8); // IO26 = 0x80, IO25 = sample
 GND | Ground
 IO25 | Audio In-
 IO26 | Audio In+
+
+🔴🟢🟤🟡⚪🔵🟣🟠
