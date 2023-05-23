@@ -1,4 +1,6 @@
 /*
+https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/
+https://dl.espressif.com/dl/esp-idf/?idf=4.4
 Component config -> ESP System settings:
  Also watch CPU1 tick interrupt: off (default on)
  Watch CPU1 Idle Task: off (default on)
