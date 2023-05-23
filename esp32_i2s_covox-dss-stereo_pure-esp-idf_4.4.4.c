@@ -2,8 +2,6 @@
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/
 https://dl.espressif.com/dl/esp-idf/?idf=4.4
 Espressif-IDE 2.9.1 with ESP-IDF v5.0.1 (1GB) / espressif-ide-setup-2.9.1-with-esp-idf-5.0.1.exe
-(this version doesn't compile with ESP-IDF v5.0.x so we need v4.4.4)
-ESP-IDF v4.4.4 - Offline Installer (630MB)
 New: Espressif IDF Project
 Name: covox
 Target: ESP32
