@@ -28,7 +28,7 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 
 //#define VOLUME 4 // 0 min, 8 max
 #define VOLUME 8 //
-#define DEBUG
+//#define DEBUG
 //#define EXTRA_GND 26
 
 #define D0 13 // white
@@ -394,6 +394,7 @@ void app_main(void)
 		}
 
 		// debug:
+		#ifdef DEBUG
 		static uint32_t oldtime = 0, newtime = 0;
 		//newtime = xthal_get_ccount();
 		newtime = esp_timer_get_time();
@@ -418,8 +419,8 @@ void app_main(void)
 			//printf("difference: %u\n", totalSampleCounter-totalSamplesPlayed);
 			printf("\n");
 			oldtime += 1000000; //ms_to_cycles(1000);
-
 		}
+		#endif
 
 		if (mode_change_flag) {
 			change_mode(mode_change_flag);
