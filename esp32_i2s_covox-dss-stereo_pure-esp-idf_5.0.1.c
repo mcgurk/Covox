@@ -21,8 +21,11 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #include "soc/rtc.h"
 #include "hal/gpio_hal.h"
 #include "esp_timer.h"
-#include <inttypes.h>
+//#include <inttypes.h>
 #include "rom/gpio.h"
+
+#define uint32_t unsigned int
+#define int32_t int
 
 //#define VOLUME 4 // 0 min, 8 max
 #define VOLUME 8 //
@@ -317,7 +320,7 @@ void change_mode(uint32_t new_mode) {
 	gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
 	gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
 	mode = new_mode;
-	printf("New mode!: %" PRIu32 "\n", mode);
+	printf("New mode!: %u\n", mode);
 }
 
 #define PIN_TO_INPUT(pin) \
@@ -401,16 +404,16 @@ void app_main(void)
 			rtc_clk_cpu_freq_get_config(&conf);
 			//printf("main core: %i, cpu speed: %u, cycles: %u, ",xPortGetCoreID(), conf.freq_mhz, xthal_get_ccount());
 			//printf("main core: %i, cpu speed: %u, ",xPortGetCoreID(), conf.freq_mhz);
-			printf("cpu speed: %" PRIu32 ", ", conf.freq_mhz);
+			printf("cpu speed: %u, ", conf.freq_mhz);
 			//printf("debug: %u, ", debug);
 			//printf("BOOL_COVOX: %u, ", BOOL_COVOX);
-			printf("stereocount: %" PRIu32 ", ", stereocount);
-			printf("FIFOCLK: %" PRIu32 ", ", (REG_READ(GPIO_IN_REG)>>FIFOCLK)&1);
-			printf("esp_timer_get_time(): %" PRIu32 ", ", newtime);
-			printf("last_stereo: %" PRIu32 ", ", newtime-last_stereo_signal);
-			printf("last_dss: %" PRIu32 ", ", newtime-last_dss_signal);
+			printf("stereocount: %u, ", stereocount);
+			printf("FIFOCLK: %u, ", (REG_READ(GPIO_IN_REG)>>FIFOCLK)&1);
+			printf("esp_timer_get_time(): %u, ", newtime);
+			printf("last_stereo: %u, ", newtime-last_stereo_signal);
+			printf("last_dss: %u, ", newtime-last_dss_signal);
 			//printf("stereo_detect_count: %u, ", stereo_detect_count);
-			printf("mode: %" PRIu32 ", ", mode);
+			printf("mode: %u, ", mode);
 			//printf("totalTaskCounter: %u, ", totalTaskCounter);
 			//printf("totalSampleCounter: %u, ", totalSampleCounter);
 			//printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
