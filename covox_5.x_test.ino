@@ -25,7 +25,7 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #define uint32_t unsigned int
 #define int32_t int
 
-#define VOLUME 8 // 0 min, 8 max
+#define VOLUME 7//8 // 0 min, 8 max //why 8 makes crackling?! to both channels!?
 #define DEBUG
 
 #define D0 13 // white
@@ -87,6 +87,7 @@ void core1_task( void * pvParameters ) {
 		uint32_t s3 = REG_READ(GPIO_IN_REG);
 		if (s1 != s2) s1 = s3;
 		uint16_t out = (CONVERT_GPIOREG_TO_SAMPLE(s1) - 128) << VOLUME;
+		//uint16_t out = (CONVERT_GPIOREG_TO_SAMPLE(s1) - 128) << 7;
 		uint16_t i = totalSampleCounter & 2047;
 		buf[i] = (out << 16) | out;
 		if (i == 1023) buffer_full = 1;
@@ -141,6 +142,7 @@ void app_main(void)
 	gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
 
 	ESP_LOGI(TAG, "log test");
+	ESP_LOGI(TAG, IDF_VER);
 
 	while (1) {
 
