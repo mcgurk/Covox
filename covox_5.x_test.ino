@@ -96,9 +96,6 @@ void core1_task( void * pvParameters ) {
 		gpio_pulldown_dis(pin); \
 		gpio_pullup_dis(pin);
 
-#define ms_to_cycles(a) 160000000L/1000L*a
-#define cycles xthal_get_ccount
-
 void app_main(void)
 {
 
@@ -114,7 +111,6 @@ void app_main(void)
 	i2s_channel_init_std_mode(tx_handle, &std_cfg);
 	/* Before writing data, start the TX channel first */
 	i2s_channel_enable(tx_handle);
-	//i2s_channel_write(tx_handle, src_buf, bytes_to_write, bytes_written, ticks_to_wait);
 
 	/* If the configurations of slot or clock need to be updated, stop the channel first and then update it */
 	// i2s_channel_disable(tx_handle);
@@ -123,7 +119,7 @@ void app_main(void)
 	// std_cfg.clk_cfg.sample_rate_hz = 96000;
 	// i2s_channel_reconfig_std_clock(tx_handle, &std_cfg.clk_cfg);
 	// i2s_channel_enable(tx_handle);
-	
+
 	printf("setup running on core: %i\n", xPortGetCoreID());
 	xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
 
@@ -157,8 +153,6 @@ void app_main(void)
 			//printf("main core: %i, cpu speed: %u, cycles: %u, ",xPortGetCoreID(), conf.freq_mhz, xthal_get_ccount());
 			//printf("main core: %i, cpu speed: %u, ",xPortGetCoreID(), conf.freq_mhz);
 			printf("cpu speed: %u, ", conf.freq_mhz);
-			//printf("debug: %u, ", debug);
-			//printf("BOOL_COVOX: %u, ", BOOL_COVOX);
 			printf("esp_timer_get_time(): %u, ", newtime);
 			//printf("stereo_detect_count: %u, ", stereo_detect_count);
 			//printf("totalTaskCounter: %u, ", totalTaskCounter);
@@ -166,7 +160,7 @@ void app_main(void)
 			//printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
 			//printf("difference: %u\n", totalSampleCounter-totalSamplesPlayed);
 			printf("\n");
-			oldtime += 1000000; //ms_to_cycles(1000);
+			oldtime += 1000000;
 		}
 		#endif
 
@@ -174,4 +168,3 @@ void app_main(void)
 	}
 
 }
-
