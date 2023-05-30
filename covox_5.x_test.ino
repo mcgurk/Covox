@@ -19,8 +19,8 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #include "esp_log.h" // ESP_LOGI
 #include "esp_timer.h" // esp_timer_get_time
 #include "soc/rtc.h" // rtc_cpu_freq_config_t
-#include "driver/i2s_std.h"
-#include "driver/gpio.h"
+#include "driver/i2s_std.h" // I2S
+#include "driver/gpio.h" // I2S
 
 #define uint32_t unsigned int
 #define int32_t int
