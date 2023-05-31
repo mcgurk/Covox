@@ -1,5 +1,5 @@
 /*
-This uses ESP-IDF legacy I2S.
+This uses ESP-IDF 5.0.1 and legacy I2S.
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/
 https://dl.espressif.com/dl/esp-idf
 Espressif-IDE 2.9.1 with ESP-IDF v5.0.1 (1GB) / espressif-ide-setup-2.9.1-with-esp-idf-5.0.1.exe
