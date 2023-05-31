@@ -62,9 +62,9 @@ i2s_std_config_t std_cfg = {
     //.clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(SAMPLE_RATE_COVOX),
     //.slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
     .clk_cfg = {
-	.clk_cfg.sample_rate_hz = SAMPLE_RATE_COVOX,
-	.clk_cfg.clk_src = I2S_CLK_SRC_APLL,
-	.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256,
+        .sample_rate_hz = SAMPLE_RATE_COVOX,
+        .clk_src = I2S_CLK_SRC_APLL,
+        .mclk_multiple = I2S_MCLK_MULTIPLE_256,
     },
     .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
     .gpio_cfg = {
