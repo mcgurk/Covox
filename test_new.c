@@ -377,8 +377,9 @@ void app_main(void)
 	gpio_hal_input_enable(&gpiohal, GPIO_DSS);
 	gpio_hal_input_enable(&gpiohal, GPIO_STEREO);
 
-	ESP_LOGI(TAG, "log test");
-	ESP_LOGI(TAG, IDF_VER);
+	//ESP_LOGI(TAG, "log test");
+	ESP_LOGI(TAG, "Compilaton date: %s, time: %s, __DATE__, __TIME__);
+	ESP_LOGI(TAG, "ESP-IDF version: %s", IDF_VER);
 
 	change_mode(COVOX);
 	//i2s_set_clk(I2S_NUM, SAMPLE_RATE_DSS, 16, 2);
