@@ -81,6 +81,9 @@ TaskHandle_t myTaskHandle = NULL;
 
 
 enum MODE { NONE = 0, COVOX = 1, DSS = 2, STEREO = 3 };
+static const char *MODE_STRING[] = {
+    "NONE", "COVOX", "DSS", "STEREO",
+};
 volatile uint32_t mode = NONE;
 
 uint32_t buf[2048];
@@ -319,7 +322,15 @@ void change_mode(uint32_t new_mode) {
 
 void app_main(void)
 {
+	esp_err_t result;
 
+	ESP_LOGI(TAG, "Compilaton date: %s, time: %s, __DATE__, __TIME__);
+	ESP_LOGI(TAG, "ESP-IDF version: %s", IDF_VER);
+			 
+	printf("setup running on core: %i\n", xPortGetCoreID());
+	xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
+
+	/* GPIO pins initialization */
 	PIN_TO_INPUT(D0); PIN_TO_INPUT(D1); PIN_TO_INPUT(D2); PIN_TO_INPUT(D3); PIN_TO_INPUT(D4); PIN_TO_INPUT(D5); PIN_TO_INPUT(D6); PIN_TO_INPUT(D7);
 	PIN_TO_INPUT(FIFOCLK); PIN_TO_OUTPUT(FIFOFULL); gpio_set_level(FIFOFULL, 0);
 	PIN_TO_INPUT(STEREO_CHANNEL_SELECT); PIN_TO_OUTPUT(STEREO_CHANNEL_SELECT_PULLUP); gpio_pullup_en(STEREO_CHANNEL_SELECT); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 1);
@@ -327,15 +338,7 @@ void app_main(void)
 	PIN_TO_OUTPUT(GPIO_DSS); gpio_set_level(GPIO_DSS, 0);
 	PIN_TO_OUTPUT(GPIO_STEREO); gpio_set_level(GPIO_STEREO, 0);
 
-	printf("setup running on core: %i\n", xPortGetCoreID());
-	xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
-
-	//ESP_LOGI(TAG, "set clock");
-	//i2s_set_clk(I2S_NUM, SAMPLE_RATE, 16, 2);
-	//ESP_LOGI(TAG, "write data");
-
 	gpio_install_isr_service(0);
-	gpio_set_intr_type(I2S_WS_IO, GPIO_INTR_POSEDGE);
 	gpio_set_intr_type(FIFOCLK, GPIO_INTR_ANYEDGE);
 	gpio_set_intr_type(STEREO_CHANNEL_SELECT, GPIO_INTR_POSEDGE);
 	gpio_isr_handler_add(FIFOCLK, isr_dss_detect, NULL);
@@ -348,36 +351,42 @@ void app_main(void)
 	gpio_hal_input_enable(&gpiohal, GPIO_DSS);
 	gpio_hal_input_enable(&gpiohal, GPIO_STEREO);
 
-	//ESP_LOGI(TAG, "log test");
-	ESP_LOGI(TAG, "Compilaton date: %s, time: %s, __DATE__, __TIME__);
-	ESP_LOGI(TAG, "ESP-IDF version: %s", IDF_VER);
-
+	/* I2S initialization */
+	i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
+	/* Allocate a new TX channel and get the handle of this channel */
+	result = i2s_new_channel(&chan_cfg, &tx_handle, NULL);
+	if (result != ESP_OK) printf("i2s_new_channel failed!");
+	/* Initialize the channel */
+	result = i2s_channel_init_std_mode(tx_handle, &std_cfg);
+	if (result != ESP_OK) printf("i2s_channel init_std_mode failed!");
+	/* Before writing data, start the TX channel first */
+	result = i2s_channel_enable(tx_handle);
+	if (result != ESP_OK) printf("i2s_channel_enable failed!");
+	
 	change_mode(COVOX);
-	//i2s_set_clk(I2S_NUM, SAMPLE_RATE_DSS, 16, 2);
-	//mode = DSS;
-	//i2s_driver_install(I2S_NUM, &i2s_config_covox, 0, NULL);
-	//i2s_set_pin(I2S_NUM, &pin_config);
-	//change_mode(COVOX);
-	//vTaskDelay(1000 / portTICK_RATE_MS);
 
 	while (1) {
 
 		size_t i2s_bytes_write;
 		if ((mode == DSS) && buffer_full) {
-			//if (buffer_full) {
-			if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
-			if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[128], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
+			if (buffer_full == 1) result = i2s_channel_write(tx_handle, &buf[0], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
+			if (buffer_full == 2) result = i2s_channel_write(tx_handle, &buf[128], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
+			if (result != ESP_OK) printf("i2s_channel_write (DSS) failed!");
+			//if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
+			//if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[128], SIZE_OF_DSS_BUF_IN_BYTES/2, &i2s_bytes_write, portMAX_DELAY);
 			buffer_full = 0;
 			totalSamplesPlayed += i2s_bytes_write/4;
 		}
 		if ((mode != DSS) && buffer_full) {
-			if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], 1024*4, &i2s_bytes_write, portMAX_DELAY);
-			if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[1024], 1024*4, &i2s_bytes_write, portMAX_DELAY);
+			if (buffer_full == 1) result = i2s_channel_write(tx_handle, &buf[0], 1024*4, &i2s_bytes_write, portMAX_DELAY);
+			if (buffer_full == 2) result = i2s_channel_write(tx_handle, &buf[1024], 1024*4, &i2s_bytes_write, portMAX_DELAY);
+			if (result != ESP_OK) printf("i2s_channel_write (Covox/StereoIn1) failed!");
+			//if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], 1024*4, &i2s_bytes_write, portMAX_DELAY);
+			//if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[1024], 1024*4, &i2s_bytes_write, portMAX_DELAY);
 			buffer_full = 0;
 			totalSamplesPlayed += i2s_bytes_write/4;
 		}
 
-		// debug:
 		#ifdef DEBUG
 		static uint32_t oldtime = 0, newtime = 0;
 		newtime = esp_timer_get_time();
@@ -387,7 +396,6 @@ void app_main(void)
 			//printf("main core: %i, cpu speed: %u, cycles: %u, ",xPortGetCoreID(), conf.freq_mhz, xthal_get_ccount());
 			//printf("main core: %i, cpu speed: %u, ",xPortGetCoreID(), conf.freq_mhz);
 			printf("cpu speed: %u, ", conf.freq_mhz);
-			//printf("debug: %u, ", debug);
 			//printf("BOOL_COVOX: %u, ", BOOL_COVOX);
 			printf("stereocount: %u, ", stereocount);
 			printf("FIFOCLK: %u, ", (REG_READ(GPIO_IN_REG)>>FIFOCLK)&1);
@@ -395,11 +403,12 @@ void app_main(void)
 			printf("last_stereo: %u, ", newtime-last_stereo_signal);
 			printf("last_dss: %u, ", newtime-last_dss_signal);
 			//printf("stereo_detect_count: %u, ", stereo_detect_count);
-			printf("mode: %u, ", mode);
+			//printf("mode: %u, ", mode);
+			printf("mode: %u, ", MODE_STRING[mode]);			
 			//printf("totalTaskCounter: %u, ", totalTaskCounter);
 			//printf("totalSampleCounter: %u, ", totalSampleCounter);
 			//printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
-			//printf("difference: %u\n", totalSampleCounter-totalSamplesPlayed);
+			//printf("difference: %u", totalSampleCounter-totalSamplesPlayed);
 			printf("\n");
 			oldtime += 1000000;
 		}
@@ -414,7 +423,6 @@ void app_main(void)
 			uint32_t now = esp_timer_get_time();
 			if ((now - last) > 1000000L) {
 				change_mode(COVOX);
-				//esp_restart();
 			}
 		}
 		static uint32_t stereooldtime = 0, stereonewtime = 0;
@@ -433,8 +441,6 @@ void app_main(void)
 		if ( (mode != STEREO) && (REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) change_mode(DSS);
 
 		vTaskDelay(1);
-		//vTaskDelay(1000/portTICK_RATE_MS);
-
 	}
 
 }
