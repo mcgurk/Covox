@@ -38,6 +38,9 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 //#define EXTRA_GND 26
 
 /* Pin definitions */
+/* Use only pins 0..31. those are in same register (GPIO_IN_REG) */
+// *) = bootstrap-pins can be used
+
 #define D0 	(GPIO_NUM_13)	 // INPUT // white
 #define D1 	(GPIO_NUM_14)	 // INPUT // grey
 #define D2 	(GPIO_NUM_27)	 // INPUT // yellow
@@ -60,8 +63,6 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #define GPIO_COVOX 	(GPIO_NUM_2)	// OUTPUT/INPUT (doesn't need physical pin)
 #define GPIO_DSS 	(GPIO_NUM_12)	// OUTPUT/INPUT (doesn't need physical pin)
 #define GPIO_STEREO 	(GPIO_NUM_15)	// OUTPUT/INPUT (doesn't need physical pin)
-
-// *) = bootstrap-pins can be used
 
 #define BOOL_COVOX (REG_READ(GPIO_IN_REG)&(1 << GPIO_COVOX))
 #define BOOL_DSS (REG_READ(GPIO_IN_REG)&(1 << GPIO_DSS))
