@@ -99,6 +99,7 @@ volatile uint32_t mode_change_flag = 0;
 volatile uint32_t stereocount = 0;
 //volatile uint32_t debug = 0;
 
+i2s_chan_handle_t tx_handle;
 i2s_std_config_t std_cfg = {
     .clk_cfg = {
         .sample_rate_hz = SAMPLE_RATE_COVOX,
@@ -250,7 +251,7 @@ void change_mode(uint32_t new_mode) {
 	mode = NONE;
 
 	i2s_channel_disable(tx_handle);
-	
+
 	switch (old_mode) { //disable current mode
 	case COVOX:
 		gpio_set_level(GPIO_COVOX, 0);
@@ -321,9 +322,9 @@ void app_main(void)
 {
 	esp_err_t result;
 
-	ESP_LOGI(TAG, "Compilaton date: %s, time: %s, __DATE__, __TIME__);
+	ESP_LOGI(TAG, "Compilaton date: %s, time: %s", __DATE__, __TIME__);
 	ESP_LOGI(TAG, "ESP-IDF version: %s", IDF_VER);
-			 
+
 	printf("setup running on core: %i\n", xPortGetCoreID());
 	xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
 
@@ -343,7 +344,7 @@ void app_main(void)
 
 	gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0); //!!
 	gpio_hal_input_enable(&gpiohal, I2S_WS_IO); //!!
-	
+
 	gpio_hal_input_enable(&gpiohal, GPIO_COVOX);
 	gpio_hal_input_enable(&gpiohal, GPIO_DSS);
 	gpio_hal_input_enable(&gpiohal, GPIO_STEREO);
@@ -359,7 +360,7 @@ void app_main(void)
 	/* Before writing data, start the TX channel first */
 	result = i2s_channel_enable(tx_handle);
 	if (result != ESP_OK) printf("i2s_channel_enable failed!");
-	
+
 	change_mode(COVOX);
 
 	while (1) {
@@ -392,7 +393,7 @@ void app_main(void)
 			rtc_clk_cpu_freq_get_config(&conf);
 			//printf("main core: %i, cpu speed: %u, cycles: %u, ",xPortGetCoreID(), conf.freq_mhz, xthal_get_ccount());
 			//printf("main core: %i, cpu speed: %u, ",xPortGetCoreID(), conf.freq_mhz);
-			printf("cpu speed: %u, ", conf.freq_mhz);
+			printf("cpu speed: %u, ", (unsigned int)conf.freq_mhz);
 			//printf("BOOL_COVOX: %u, ", BOOL_COVOX);
 			printf("stereocount: %u, ", stereocount);
 			printf("FIFOCLK: %u, ", (REG_READ(GPIO_IN_REG)>>FIFOCLK)&1);
@@ -401,7 +402,7 @@ void app_main(void)
 			printf("last_dss: %u, ", newtime-last_dss_signal);
 			//printf("stereo_detect_count: %u, ", stereo_detect_count);
 			//printf("mode: %u, ", mode);
-			printf("mode: %u, ", MODE_STRING[mode]);			
+			printf("Mode: %s, ", MODE_STRING[mode]);
 			//printf("totalTaskCounter: %u, ", totalTaskCounter);
 			//printf("totalSampleCounter: %u, ", totalSampleCounter);
 			//printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
