@@ -1,10 +1,16 @@
 /*
-This uses ESP-IDF 5.0.1 and legacy I2S.
-https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/
-https://dl.espressif.com/dl/esp-idf
-Espressif-IDE 2.9.1 with ESP-IDF v5.0.1 (1GB) / espressif-ide-setup-2.9.1-with-esp-idf-5.0.1.exe
+Covox/DSS/StereoIn1 implementation for ESP-IDF 5.0.2, ESP32-PICO-KIT and GY-PCM5102 by McGurk
+
+https://dl.espressif.com/dl/esp-idf/
+ESP-IDF v5.0.2 - Offline Installer (768MB) / esp-idf-tools-setup-offline-5.0.2.exe
+
+https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
+https://www.ti.com/lit/ds/symlink/pcm5102.pdf
+https://github.com/espressif/esp-idf/blob/master/components/driver/i2s/include/driver/i2s_std.h
+https://github.com/espressif/esp-idf/blob/master/components/driver/i2s/include/driver/i2s_common.h
+
 New: Espressif IDF Project
-Name: covox
+Name: covox_simple
 Target: ESP32
 Component config -> ESP System settings:
  CPU frequency: 240MHz (default: 160MHz)
@@ -13,35 +19,33 @@ Component config -> ESP System settings:
 Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 */
 
-#include <stdio.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "driver/i2s.h"
-#include "driver/gpio.h"
-#include "esp_system.h"
-#include "esp_log.h"
-#include "soc/rtc.h"
-#include "hal/gpio_hal.h"
-#include "esp_timer.h"
-//#include <inttypes.h>
-#include "rom/gpio.h"
+#include "freertos/FreeRTOS.h" // task.h
+#include "freertos/task.h" // vTaskDelay()
+#include "soc/gpio_reg.h" // GPIO_IN_REG
+#include "rom/gpio.h" // gpio_pad_select_gpio
+#include "hal/gpio_hal.h" // gpio_hal_context_t
+#include "esp_log.h" // ESP_LOGI
+#include "esp_timer.h" // esp_timer_get_time
+#include "soc/rtc.h" // rtc_cpu_freq_config_t
+#include "driver/i2s_std.h" // I2S
+#include "driver/gpio.h" // I2S
 
 #define uint32_t unsigned int
 #define int32_t int
 
-//#define VOLUME 4 // 0 min, 8 max
-#define VOLUME 8 //
-//#define DEBUG
+#define VOLUME 8 // 0 min, 8 max
+#define DEBUG
 //#define EXTRA_GND 26
 
-#define D0 13 // white
-#define D1 14 // grey
-#define D2 27 // yellow
-#define D3 26 // brown
-#define D4  9 // blue
-#define D5 10 // purple
-#define D6 18 // pink
-#define D7 23 // green
+/* Pin definitions */
+#define D0 13 // INPUT // white
+#define D1 14 // INPUT // grey
+#define D2 27 // INPUT // yellow
+#define D3 26 // INPUT // brown
+#define D4  9 // INPUT // blue
+#define D5 10 // INPUT // purple
+#define D6 18 // INPUT // pink
+#define D7 23 // INPUT // green
 
 #define I2S_BCK_IO      (GPIO_NUM_33) //4)
 #define I2S_WS_IO       (GPIO_NUM_5)
