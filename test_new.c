@@ -79,11 +79,8 @@ static const char* TAG = "McGurk_Covox/DSS/StereoIn1-system";
 #define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
 TaskHandle_t myTaskHandle = NULL;
 
-
 enum MODE { NONE = 0, COVOX = 1, DSS = 2, STEREO = 3 };
-static const char *MODE_STRING[] = {
-    "NONE", "COVOX", "DSS", "STEREO",
-};
+static const char *MODE_STRING[] = { "NONE", "COVOX", "DSS", "STEREO" };
 volatile uint32_t mode = NONE;
 
 uint32_t buf[2048];
