@@ -4,7 +4,7 @@ Trying to make parallel port / LPT soundcard Covox with microcontroller
 
 ## Parts
 
-- ESP32
+- ESP32-PICO-KIT (if other ESP32 is used, modify pins)
 - I2S DAC (e.g. PCM5102A/GY-PCM5102 or I2S DAC amplifier MAX98357A)
 
 ## Wiring
