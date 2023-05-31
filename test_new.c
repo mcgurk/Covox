@@ -38,28 +38,30 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 //#define EXTRA_GND 26
 
 /* Pin definitions */
-#define D0 13 // INPUT // white
-#define D1 14 // INPUT // grey
-#define D2 27 // INPUT // yellow
-#define D3 26 // INPUT // brown
-#define D4  9 // INPUT // blue
-#define D5 10 // INPUT // purple
-#define D6 18 // INPUT // pink
-#define D7 23 // INPUT // green
+#define D0 	(GPIO_NUM_13)	 // INPUT // white
+#define D1 	(GPIO_NUM_14)	 // INPUT // grey
+#define D2 	(GPIO_NUM_27)	 // INPUT // yellow
+#define D3 	(GPIO_NUM_26)	 // INPUT // brown
+#define D4 	(GPIO_NUM_9)	 // INPUT // blue
+#define D5 	(GPIO_NUM_10)	 // INPUT // purple
+#define D6 	(GPIO_NUM_18)	 // INPUT // pink
+#define D7 	(GPIO_NUM_23)	 // INPUT // green
 
-#define I2S_BCK_IO      (GPIO_NUM_33) //4)
-#define I2S_WS_IO       (GPIO_NUM_5)
-#define I2S_DO_IO       (GPIO_NUM_32) //18)
+#define I2S_BCK_IO      (GPIO_NUM_33) 	// OUTPUT (*
+#define I2S_WS_IO       (GPIO_NUM_5)	// OUTPUT (*
+#define I2S_DO_IO       (GPIO_NUM_32)	// OUTPUT (*
 
-#define FIFOCLK 19 // fifoclock, 17 (Select Printer_) (PC->DSS)
-#define FIFOFULL 22 // fifofull, 10 (ACK) (DSS->PC)
+#define FIFOCLK (GPIO_NUM_19)	// INPUT	// fifoclock, 17 (Select Printer_), PC(LPT)->DSS(ESP32))
+#define FIFOFULL (GPIO_NUM_22)	// OUTPUT	// fifofull, 10 (ACK), DSS(ESP32)->PC(LPT))
 
-#define STEREO_CHANNEL_SELECT 4
-#define STEREO_CHANNEL_SELECT_PULLUP 25
+#define STEREO_CHANNEL_SELECT 		(GPIO_NUM_4)	// INPUT
+#define STEREO_CHANNEL_SELECT_PULLUP 	(GPIO_NUM_25)	// OUTPUT *)
 
-#define GPIO_COVOX 2
-#define GPIO_DSS 12
-#define GPIO_STEREO 15
+#define GPIO_COVOX 	(GPIO_NUM_2)	// OUTPUT/INPUT (doesn't need physical pin)
+#define GPIO_DSS 	(GPIO_NUM_12)	// OUTPUT/INPUT (doesn't need physical pin)
+#define GPIO_STEREO 	(GPIO_NUM_15)	// OUTPUT/INPUT (doesn't need physical pin)
+
+// *) = bootstrap-pins can be used
 
 #define BOOL_COVOX (REG_READ(GPIO_IN_REG)&(1 << GPIO_COVOX))
 #define BOOL_DSS (REG_READ(GPIO_IN_REG)&(1 << GPIO_DSS))
