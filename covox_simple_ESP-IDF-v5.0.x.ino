@@ -3,9 +3,14 @@ Covox implementation for ESP-IDF 5.0.2, ESP32-PICO-KIT and GY-PCM5102 by McGurk
 
 https://dl.espressif.com/dl/esp-idf/
 ESP-IDF v5.0.2 - Offline Installer (768MB) / esp-idf-tools-setup-offline-5.0.2.exe
+
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
+https://www.ti.com/lit/ds/symlink/pcm5102.pdf
+https://github.com/espressif/esp-idf/blob/master/components/driver/i2s/include/driver/i2s_std.h
+https://github.com/espressif/esp-idf/blob/master/components/driver/i2s/include/driver/i2s_common.h
+
 New: Espressif IDF Project
-Name: covox
+Name: covox_simple
 Target: ESP32
 Component config -> ESP System settings:
  CPU frequency: 240MHz (default: 160MHz)
