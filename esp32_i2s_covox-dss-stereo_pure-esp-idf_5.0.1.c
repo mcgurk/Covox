@@ -1,6 +1,7 @@
 /*
+This uses ESP-IDF legacy I2S.
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/
-https://dl.espressif.com/dl/esp-idf/?idf=4.4
+https://dl.espressif.com/dl/esp-idf
 Espressif-IDE 2.9.1 with ESP-IDF v5.0.1 (1GB) / espressif-ide-setup-2.9.1-with-esp-idf-5.0.1.exe
 New: Espressif IDF Project
 Name: covox
@@ -11,6 +12,7 @@ Component config -> ESP System settings:
  Watch CPU1 Idle Task: off (default on)
 Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 */
+
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -368,6 +370,7 @@ void app_main(void)
 	gpio_hal_input_enable(&gpiohal, GPIO_STEREO);
 
 	ESP_LOGI(TAG, "log test");
+	ESP_LOGI(TAG, IDF_VER);
 
 	change_mode(COVOX);
 	//i2s_set_clk(I2S_NUM, SAMPLE_RATE_DSS, 16, 2);
