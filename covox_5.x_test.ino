@@ -25,7 +25,7 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #define uint32_t unsigned int
 #define int32_t int
 
-#define VOLUME 7//8 // 0 min, 8 max //why 8 makes crackling?! to both channels!?
+#define VOLUME 8 // 0 min, 8 max
 #define DEBUG
 
 #define D0 13 // white
