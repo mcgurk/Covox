@@ -1,7 +1,9 @@
 /*
-https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/
-https://dl.espressif.com/dl/esp-idf/?idf=4.4
-Espressif-IDE 2.9.1 with ESP-IDF v5.0.1 (1GB) / espressif-ide-setup-2.9.1-with-esp-idf-5.0.1.exe
+Covox implementation for ESP-IDF 5.0.2, ESP32-PICO-KIT and GY-PCM5102 by McGurk
+
+https://dl.espressif.com/dl/esp-idf/
+ESP-IDF v5.0.2 - Offline Installer (768MB) / esp-idf-tools-setup-offline-5.0.2.exe
+https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
 New: Espressif IDF Project
 Name: covox
 Target: ESP32
@@ -11,6 +13,7 @@ Component config -> ESP System settings:
  Watch CPU1 Idle Task: off (default on)
 Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 */
+
 #include "freertos/FreeRTOS.h" // task.h
 #include "freertos/task.h" // vTaskDelay()
 #include "soc/gpio_reg.h" // GPIO_IN_REG
@@ -100,7 +103,7 @@ void core1_task( void * pvParameters ) {
 		if (i == 2047) buffer_full = 2;
 		totalSampleCounter++;
 		totalTaskCounter++;
-		while ((REG_READ(GPIO_IN_REG) & (1<<I2S_WS_IO))); // while signal is high
+		while ((REG_READ(GPIO_IN_REG) & (1<<I2S_WS_IO))); // while signal is high. this syncronizes routine to I2S WS clock
 	}
 }
 
@@ -115,6 +118,7 @@ void app_main(void)
 {
 	esp_err_t result;
 
+	// prepare all 8 LPT datapins to be input and without pullup/pulldown
 	PIN_TO_INPUT(D0); PIN_TO_INPUT(D1); PIN_TO_INPUT(D2); PIN_TO_INPUT(D3); PIN_TO_INPUT(D4); PIN_TO_INPUT(D5); PIN_TO_INPUT(D6); PIN_TO_INPUT(D7);
 
 	/* Get the default channel configuration by the helper macro.
@@ -126,10 +130,10 @@ void app_main(void)
 	if (result != ESP_OK) printf("i2s_new_channel failed!");
 	/* Initialize the channel */
 	result = i2s_channel_init_std_mode(tx_handle, &std_cfg);
-	if (result != ESP_OK) printf("i2s_channel init_std_mode!");
+	if (result != ESP_OK) printf("i2s_channel init_std_mode failed!");
 	/* Before writing data, start the TX channel first */
 	result = i2s_channel_enable(tx_handle);
-	if (result != ESP_OK) printf("i2s_channle_enable!");
+	if (result != ESP_OK) printf("i2s_channel_enable failed!");
 
 	/* If the configurations of slot or clock need to be updated, stop the channel first and then update it */
 	// i2s_channel_disable(tx_handle);
@@ -142,9 +146,7 @@ void app_main(void)
 	printf("setup running on core: %i\n", xPortGetCoreID());
 	xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
 
-	gpio_install_isr_service(0);
-	gpio_set_intr_type(I2S_WS_IO, GPIO_INTR_POSEDGE);
-	gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
+	gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0); // I2S WS clock cannot be read internally without these two lines
 	gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
 
 	ESP_LOGI(TAG, "log test");
@@ -156,9 +158,7 @@ void app_main(void)
 		if (buffer_full) {
 			if (buffer_full == 1) result = i2s_channel_write(tx_handle, &buf[0], 1024*4, &i2s_bytes_write, portMAX_DELAY); //check ESP_OK
 			if (buffer_full == 2) result = i2s_channel_write(tx_handle, &buf[1024], 1024*4, &i2s_bytes_write, portMAX_DELAY); //check ESP_OK
-			//if (buffer_full == 1) i2s_write(I2S_NUM_0, &buf[0], 1024*4, &i2s_bytes_write, portMAX_DELAY);
-			//if (buffer_full == 2) i2s_write(I2S_NUM_0, &buf[1024], 1024*4, &i2s_bytes_write, portMAX_DELAY);
-			if (result != ESP_OK) printf("write failed!");
+			if (result != ESP_OK) printf("i2s_channel_write failed!");
 			buffer_full = 0;
 			totalSamplesPlayed += i2s_bytes_write/4;
 		}
