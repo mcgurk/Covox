@@ -38,8 +38,8 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 //#define EXTRA_GND 26
 
 /* Pin definitions */
-/* Use only pins 0..31. those are in same register (GPIO_IN_REG) */
-// *) = bootstrap-pins can be used
+/* 	Use only pins 0..31. those are in same register (GPIO_IN_REG) */
+/* 	*) = bootstrap-pins can be used */
 
 #define D0 	(GPIO_NUM_13)	 // INPUT // white
 #define D1 	(GPIO_NUM_14)	 // INPUT // grey
@@ -64,20 +64,21 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #define GPIO_DSS 	(GPIO_NUM_12)	// OUTPUT/INPUT (doesn't need physical pin)
 #define GPIO_STEREO 	(GPIO_NUM_15)	// OUTPUT/INPUT (doesn't need physical pin)
 
+/* Pin definition ends */
+
+static const char* TAG = "McGurk_Covox/DSS/StereoIn1-system";
+
+#define SIZE_OF_DSS_BUF_IN_BYTES 256*4
+#define SAMPLE_RATE_DSS (14000)
+#define SAMPLE_RATE_COVOX (96000)
+
 #define BOOL_COVOX (REG_READ(GPIO_IN_REG)&(1 << GPIO_COVOX))
 #define BOOL_DSS (REG_READ(GPIO_IN_REG)&(1 << GPIO_DSS))
 #define BOOL_STEREO (REG_READ(GPIO_IN_REG)&(1 << GPIO_STEREO))
 
-#define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 #define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
 TaskHandle_t myTaskHandle = NULL;
 
-#define SAMPLE_RATE_DSS (14000)
-#define SAMPLE_RATE_COVOX (96000)
-#define I2S_NUM         (0)
-#define I2S_DI_IO       (-1)
-
-static const char* TAG = "mcgurk_DSS_system";
 
 enum MODE { NONE = 0, COVOX = 1, DSS = 2, STEREO = 3 };
 volatile uint32_t mode = NONE;
