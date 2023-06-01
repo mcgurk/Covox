@@ -34,12 +34,12 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #define int32_t int
 
 #define VOLUME 8 // 0 min, 8 max
-#define DEBUG
-//#define EXTRA_GND 26
+//#define DEBUG
 
-/* Pin definitions */
-/* 	Use only pins 0..31. those are in same register (GPIO_IN_REG) */
-/* 	*) = bootstrap-pins can be used */
+/* Pin definitions 														*/
+/* --------------- 														*/
+/* 	  Use only pins 0..31. those are in same register (GPIO_IN_REG) 	*/
+/* 	  (* = bootstrap-pins can be used 									*/
 
 #define D0 	(GPIO_NUM_13)	 // INPUT // white
 #define D1 	(GPIO_NUM_14)	 // INPUT // grey
@@ -54,14 +54,14 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #define I2S_WS_IO       (GPIO_NUM_5)	// OUTPUT (*
 #define I2S_DO_IO       (GPIO_NUM_32)	// OUTPUT (*
 
-#define FIFOCLK (GPIO_NUM_19)	// INPUT	// fifoclock, 17 (Select Printer_), PC(LPT)->DSS(ESP32))
-#define FIFOFULL (GPIO_NUM_22)	// OUTPUT	// fifofull, 10 (ACK), DSS(ESP32)->PC(LPT))
+#define FIFOCLK 	(GPIO_NUM_19)	// INPUT	// fifoclock, 17 (Select Printer_), PC(LPT)->DSS(ESP32))
+#define FIFOFULL 	(GPIO_NUM_22)	// OUTPUT	// fifofull, 10 (ACK), DSS(ESP32)->PC(LPT))
 
-#define STEREO_CHANNEL_SELECT 		(GPIO_NUM_4)	// INPUT
+#define STEREO_CHANNEL_SELECT 			(GPIO_NUM_4)	// INPUT
 #define STEREO_CHANNEL_SELECT_PULLUP 	(GPIO_NUM_25)	// OUTPUT *)
 
-#define GPIO_COVOX 	(GPIO_NUM_2)	// OUTPUT/INPUT (doesn't need physical pin)
-#define GPIO_DSS 	(GPIO_NUM_12)	// OUTPUT/INPUT (doesn't need physical pin)
+#define GPIO_COVOX 		(GPIO_NUM_2)	// OUTPUT/INPUT (doesn't need physical pin)
+#define GPIO_DSS 		(GPIO_NUM_12)	// OUTPUT/INPUT (doesn't need physical pin)
 #define GPIO_STEREO 	(GPIO_NUM_15)	// OUTPUT/INPUT (doesn't need physical pin)
 
 /* Pin definition ends */
@@ -71,10 +71,6 @@ static const char* TAG = "McGurk_Covox/DSS/StereoIn1-system";
 #define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 #define SAMPLE_RATE_DSS (14000)
 #define SAMPLE_RATE_COVOX (96000)
-
-#define BOOL_COVOX (REG_READ(GPIO_IN_REG)&(1 << GPIO_COVOX))
-#define BOOL_DSS (REG_READ(GPIO_IN_REG)&(1 << GPIO_DSS))
-#define BOOL_STEREO (REG_READ(GPIO_IN_REG)&(1 << GPIO_STEREO))
 
 #define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
 TaskHandle_t myTaskHandle = NULL;
@@ -108,11 +104,11 @@ i2s_std_config_t std_cfg = {
     },
     .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
     .gpio_cfg = {
-        .mclk = I2S_GPIO_UNUSED,
+        .mclk = I2S_GPIO_UNUSED, // @suppress("Symbol is not resolved")
         .bclk = I2S_BCK_IO,
         .ws = I2S_WS_IO,
         .dout = I2S_DO_IO,
-        .din = I2S_GPIO_UNUSED,
+        .din = I2S_GPIO_UNUSED, // @suppress("Symbol is not resolved")
         .invert_flags = {
             .mclk_inv = false,
             .bclk_inv = false,
@@ -155,7 +151,7 @@ void dss_routine(void) {
 			a = REG_READ(GPIO_IN_REG);
 			if ( !(a&(1 << GPIO_DSS)) ) return;
 		} while ((a & (1<<FIFOCLK))); // continue when FIFOCLK signal goes LOW
-		//totalTaskCounter++;
+		//totalSampleCounter++;
 	}
 }
 
@@ -191,20 +187,21 @@ void stereo_routine(void) {
 					"end: \n"
 					: "=&r" (temp_reg), "=&r" (temp_reg2), "=&r" (temp_reg3) \
 					  : "a" (gpio_reg), "a" (mask), "a" (endmask), "a" (left_ptr), "a" (right_ptr) );
-			//totalTaskCounter++;
+			//totalSampleCounter++;
 			return;
 		}
 	}
 }
 
 void core1_task( void * pvParameters ) {
+	//printf("core1_task running on core: %i\n", xPortGetCoreID());
+	ESP_LOGI(TAG, "'core1_task' running on core: %i", xPortGetCoreID());
 	portDISABLE_INTERRUPTS();
 	while(1) {
-		if ( BOOL_COVOX ) covox_routine();
-		if ( BOOL_DSS ) dss_routine();
-		if ( BOOL_STEREO ) stereo_routine();
+		if ( gpio_get_level(GPIO_COVOX) ) covox_routine();
+		if ( gpio_get_level(GPIO_DSS) ) dss_routine();
+		if ( gpio_get_level(GPIO_STEREO) ) stereo_routine();
 		totalTaskCounter++;  // not very meaningful anymore
-		//debug++;
 	}
 }
 
@@ -303,7 +300,8 @@ void change_mode(uint32_t new_mode) {
 	//gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0); //!!
 	//gpio_hal_input_enable(&gpiohal, I2S_WS_IO); //!!
 	mode = new_mode;
-	printf("New mode!: %u\n", mode);
+	//printf("New mode!: %u\n", mode);
+	ESP_LOGI(TAG, "New mode: %s", MODE_STRING[mode]);
 }
 
 #define PIN_TO_INPUT(pin) \
@@ -316,17 +314,17 @@ void change_mode(uint32_t new_mode) {
 #define PIN_TO_OUTPUT(pin) \
 		gpio_reset_pin(pin); \
 		gpio_pad_select_gpio(pin); \
-		gpio_set_direction(pin, GPIO_MODE_OUTPUT);
+		gpio_set_direction(pin, GPIO_MODE_OUTPUT); \
 
 void app_main(void)
 {
 	esp_err_t result;
 
-	ESP_LOGI(TAG, "Compilaton date: %s, time: %s", __DATE__, __TIME__);
-	ESP_LOGI(TAG, "ESP-IDF version: %s", IDF_VER);
+	ESP_LOGI(TAG, "Start");
+	//ESP_LOGI(TAG, "Compilaton date: %s, time: %s", __DATE__, __TIME__);
+	//ESP_LOGI(TAG, "ESP-IDF version: %s", IDF_VER);
 
-	printf("setup running on core: %i\n", xPortGetCoreID());
-	xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
+	mode = NONE;
 
 	/* GPIO pins initialization */
 	PIN_TO_INPUT(D0); PIN_TO_INPUT(D1); PIN_TO_INPUT(D2); PIN_TO_INPUT(D3); PIN_TO_INPUT(D4); PIN_TO_INPUT(D5); PIN_TO_INPUT(D6); PIN_TO_INPUT(D7);
@@ -335,19 +333,21 @@ void app_main(void)
 	PIN_TO_OUTPUT(GPIO_COVOX); gpio_set_level(GPIO_COVOX, 0);
 	PIN_TO_OUTPUT(GPIO_DSS); gpio_set_level(GPIO_DSS, 0);
 	PIN_TO_OUTPUT(GPIO_STEREO); gpio_set_level(GPIO_STEREO, 0);
+	gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0); //!!
+	gpio_hal_input_enable(&gpiohal, GPIO_COVOX);
+	gpio_hal_input_enable(&gpiohal, GPIO_DSS);
+	gpio_hal_input_enable(&gpiohal, GPIO_STEREO);
+
+	//printf("app_main running on core: %i\n", xPortGetCoreID());
+	ESP_LOGI(TAG, "'app_main' running on core: %i", xPortGetCoreID());
+	xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
 
 	gpio_install_isr_service(0);
+	gpio_set_intr_type(I2S_WS_IO, GPIO_INTR_POSEDGE);
 	gpio_set_intr_type(FIFOCLK, GPIO_INTR_ANYEDGE);
 	gpio_set_intr_type(STEREO_CHANNEL_SELECT, GPIO_INTR_POSEDGE);
 	gpio_isr_handler_add(FIFOCLK, isr_dss_detect, NULL);
 	gpio_isr_handler_add(STEREO_CHANNEL_SELECT, isr_stereo_detect, NULL);
-
-	gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0); //!!
-	gpio_hal_input_enable(&gpiohal, I2S_WS_IO); //!!
-
-	gpio_hal_input_enable(&gpiohal, GPIO_COVOX);
-	gpio_hal_input_enable(&gpiohal, GPIO_DSS);
-	gpio_hal_input_enable(&gpiohal, GPIO_STEREO);
 
 	/* I2S initialization */
 	i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
@@ -360,6 +360,8 @@ void app_main(void)
 	/* Before writing data, start the TX channel first */
 	result = i2s_channel_enable(tx_handle);
 	if (result != ESP_OK) printf("i2s_channel_enable failed!");
+
+	gpio_hal_input_enable(&gpiohal, I2S_WS_IO); //!!
 
 	change_mode(COVOX);
 
@@ -398,15 +400,15 @@ void app_main(void)
 			printf("stereocount: %u, ", stereocount);
 			printf("FIFOCLK: %u, ", (REG_READ(GPIO_IN_REG)>>FIFOCLK)&1);
 			printf("esp_timer_get_time(): %u, ", newtime);
-			printf("last_stereo: %u, ", newtime-last_stereo_signal);
-			printf("last_dss: %u, ", newtime-last_dss_signal);
+			//printf("last_stereo: %u, ", newtime-last_stereo_signal);
+			//printf("last_dss: %u, ", newtime-last_dss_signal);
 			//printf("stereo_detect_count: %u, ", stereo_detect_count);
 			//printf("mode: %u, ", mode);
 			printf("Mode: %s, ", MODE_STRING[mode]);
-			//printf("totalTaskCounter: %u, ", totalTaskCounter);
-			//printf("totalSampleCounter: %u, ", totalSampleCounter);
-			//printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
-			//printf("difference: %u", totalSampleCounter-totalSamplesPlayed);
+			printf("totalTaskCounter: %u, ", totalTaskCounter);
+			printf("totalSampleCounter: %u, ", totalSampleCounter);
+			printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
+			printf("difference: %u", totalSampleCounter-totalSamplesPlayed);
 			printf("\n");
 			oldtime += 1000000;
 		}
