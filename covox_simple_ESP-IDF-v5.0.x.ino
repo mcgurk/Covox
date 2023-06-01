@@ -140,14 +140,6 @@ void app_main(void)
 	result = i2s_channel_enable(tx_handle);
 	if (result != ESP_OK) printf("i2s_channel_enable failed!");
 
-	/* If the configurations of slot or clock need to be updated, stop the channel first and then update it */
-	// i2s_channel_disable(tx_handle);
-	// std_cfg.slot_cfg.slot_mode = I2S_SLOT_MODE_MONO; // Default is stereo
-	// i2s_channel_reconfig_std_slot(tx_handle, &std_cfg.slot_cfg);
-	// std_cfg.clk_cfg.sample_rate_hz = 96000;
-	// i2s_channel_reconfig_std_clock(tx_handle, &std_cfg.clk_cfg);
-	// i2s_channel_enable(tx_handle);
-
 	printf("setup running on core: %i\n", xPortGetCoreID());
 	xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
 
