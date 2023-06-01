@@ -23,16 +23,13 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #include "soc/rtc.h"
 #include "hal/gpio_hal.h"
 #include "esp_timer.h"
-//#include <inttypes.h>
 #include "rom/gpio.h"
 
 #define uint32_t unsigned int
 #define int32_t int
 
-//#define VOLUME 4 // 0 min, 8 max
-#define VOLUME 8 //
+#define VOLUME 8 // 0 min, 8 max
 //#define DEBUG
-//#define EXTRA_GND 26
 
 #define D0 13 // white
 #define D1 14 // grey
@@ -129,7 +126,7 @@ void covox_routine(void) {
 		do {
 			a = REG_READ(GPIO_IN_REG);
 			if ( !(a&(1 << GPIO_COVOX)) ) return;
-		} while (!(a & (1<<I2S_WS_IO))); // a = when signal goes high
+		} while (!(a & (1<<I2S_WS_IO))); // continue when I2S_WS signal goes HIGH
 		uint32_t s1 = REG_READ(GPIO_IN_REG);
 		uint32_t s2 = REG_READ(GPIO_IN_REG);
 		uint32_t s3 = REG_READ(GPIO_IN_REG);
@@ -141,7 +138,7 @@ void covox_routine(void) {
 		if (i == 2047) buffer_full = 2;
 		totalSampleCounter++;
 		totalTaskCounter++;
-		while ((REG_READ(GPIO_IN_REG) & (1<<I2S_WS_IO))); // while signal is high
+		while ((REG_READ(GPIO_IN_REG) & (1<<I2S_WS_IO))); // wait while I2S_WS signal is HIGH. this syncronizes routine to I2S WS clock
 	}
 }
 
@@ -151,15 +148,14 @@ void dss_routine(void) {
 		do {
 			a = REG_READ(GPIO_IN_REG);
 			if ( !(a&(1 << GPIO_DSS)) ) return;
-		} while (!(a & (1<<FIFOCLK))); // a = when channel select goes high
+		} while (!(a & (1<<FIFOCLK))); // continue when FIFOCLK signal goes HIGH
 		fifo_buf[back++] = a;
 		//if ( !BOOL_DSS ) break;
 		if (fcnt == 16) GPIO.out_w1ts = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, HIGH);
-		//while ((REG_READ(GPIO_IN_REG) & (1<<FIFOCLK))); // while fifoclk pin is high
 		do {
 			a = REG_READ(GPIO_IN_REG);
 			if ( !(a&(1 << GPIO_DSS)) ) return;
-		} while ((a & (1<<FIFOCLK))); // while fifoclk pin is high
+		} while ((a & (1<<FIFOCLK))); // continue when FIFOCLK signal goes LOW
 		//totalTaskCounter++;
 	}
 }
@@ -245,22 +241,12 @@ void IRAM_ATTR isr_dssfifo() {
 }
 
 void IRAM_ATTR isr_stereo_detect() {
-	//static uint32_t filter = 0;
 	last_stereo_signal = esp_timer_get_time();
 	stereocount++;
-	//if (mode == COVOX) {
-	/*if (mode != STEREO) {
-		filter++;
-		if (filter > 4) {
-			mode_change_flag = STEREO;
-			filter = 0;
-		}
-	} else filter = 0;*/
 }
 
 void IRAM_ATTR isr_dss_detect() {
 	if ( !(REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) last_dss_signal = esp_timer_get_time();
-	//if ( (REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) && (mode != DSS) ) mode_change_flag(DSS);
 }
 
 void change_mode(uint32_t new_mode) {
@@ -337,11 +323,11 @@ void change_mode(uint32_t new_mode) {
 		gpio_pad_select_gpio(pin); \
 		gpio_set_direction(pin, GPIO_MODE_OUTPUT);
 
-#define ms_to_cycles(a) 160000000L/1000L*a
-#define cycles xthal_get_ccount
 
 void app_main(void)
 {
+
+	ESP_LOGI(TAG, "Start");
 
 	PIN_TO_INPUT(D0); PIN_TO_INPUT(D1); PIN_TO_INPUT(D2); PIN_TO_INPUT(D3); PIN_TO_INPUT(D4); PIN_TO_INPUT(D5); PIN_TO_INPUT(D6); PIN_TO_INPUT(D7);
 	PIN_TO_INPUT(FIFOCLK); PIN_TO_OUTPUT(FIFOFULL); gpio_set_level(FIFOFULL, 0);
@@ -369,16 +355,9 @@ void app_main(void)
 	gpio_hal_input_enable(&gpiohal, GPIO_DSS);
 	gpio_hal_input_enable(&gpiohal, GPIO_STEREO);
 
-	ESP_LOGI(TAG, "log test");
-	ESP_LOGI(TAG, IDF_VER);
+	//ESP_LOGI(TAG, IDF_VER);
 
 	change_mode(COVOX);
-	//i2s_set_clk(I2S_NUM, SAMPLE_RATE_DSS, 16, 2);
-	//mode = DSS;
-	//i2s_driver_install(I2S_NUM, &i2s_config_covox, 0, NULL);
-	//i2s_set_pin(I2S_NUM, &pin_config);
-	//change_mode(COVOX);
-	//vTaskDelay(1000 / portTICK_RATE_MS);
 
 	while (1) {
 
@@ -400,7 +379,6 @@ void app_main(void)
 		// debug:
 		#ifdef DEBUG
 		static uint32_t oldtime = 0, newtime = 0;
-		//newtime = xthal_get_ccount();
 		newtime = esp_timer_get_time();
 		if ( (newtime - oldtime) < 2000000000L ) {
 			rtc_cpu_freq_config_t conf;
