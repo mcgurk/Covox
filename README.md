@@ -68,6 +68,7 @@ lpt_dac = disney, covox, ston1, (or none/off)
 - https://github.com/MacLeod-D/ESp32-Fast-external-IRQs
 - Use I2S WCLK for unload buffer interrupt
 - DAC doesn't work with 7kHz so double samples to 14kHz
+- Xtensa® Instruction Set Architecture (ISA) Reference Manual: https://0x04.net/~mwk/doc/xtensa.pdf
 
 #### Links
 - DSS supported games: https://www.mobygames.com/attribute/sheet/attributeId,44
