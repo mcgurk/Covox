@@ -33,7 +33,7 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #define uint32_t unsigned int
 #define int32_t int
 
-#define VOLUME 8 // 0 min, 8 max
+#define VOLUME 7 // 0 min, 8 max
 //#define DEBUG
 
 /* Pin definitions 														*/
@@ -71,6 +71,7 @@ static const char* TAG = "McGurk_Covox/DSS/StereoIn1-system";
 #define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 #define SAMPLE_RATE_DSS (14000)
 #define SAMPLE_RATE_COVOX (96000)
+//#define SAMPLE_RATE_COVOX (88200)
 
 #define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
 TaskHandle_t myTaskHandle = NULL;
@@ -92,6 +93,7 @@ volatile uint32_t left, right;
 volatile uint32_t last_dss_signal = 0;
 volatile uint32_t last_stereo_signal = 0;
 volatile uint32_t mode_change_flag = 0;
+volatile uint32_t stereo_detect_count = 0;
 volatile uint32_t stereocount = 0;
 //volatile uint32_t debug = 0;
 
@@ -100,6 +102,7 @@ i2s_std_config_t std_cfg = {
     .clk_cfg = {
         .sample_rate_hz = SAMPLE_RATE_COVOX,
         .clk_src = I2S_CLK_SRC_APLL,
+        //.clk_src = I2S_CLK_SRC_DEFAULT,
         .mclk_multiple = I2S_MCLK_MULTIPLE_256,
     },
     .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
@@ -165,6 +168,9 @@ void stereo_routine(void) {
 		const uint32_t gpio_reg = 0x3FF4403C, mask = (1<<STEREO_CHANNEL_SELECT), endmask = (1<<GPIO_STEREO);
 		const uint32_t left_ptr = (uint32_t)&left;
 		const uint32_t right_ptr = (uint32_t)&right;
+		#ifdef DEBUG
+		const uint32_t stereocount_ptr = (uint32_t)&stereocount;
+		#endif
 		__asm__ __volatile__(
 			"loop1: \n"
 			//"memw \n"
@@ -183,13 +189,23 @@ void stereo_routine(void) {
 			//"l32i.n	%2, %3, 0 \n" //!why?
 			//"bany	  %2, %4, loop2 \n" //!why? // if HIGH, go back to start
 			//"memw \n"
-			"s32i.n	%0, %6, 0 \n"
+			"s32i.n	%0, %6, 0 \n" // store left channel
 			//"memw \n"
-			"s32i.n	%1, %7, 0 \n"
+			"s32i.n	%1, %7, 0 \n" // store right channel
+			// ----
+			#ifdef DEBUG
+			"l32i.n %0, %8, 0 \n" // inc stereocount
+			"addi %0, %0, 1 \n"
+			"s32i.n %0, %8, 0 \n"
+			#endif
+			// ----
 			"j loop1 \n"
 			"end: \n"
 			: "=&r" (temp_reg), "=&r" (temp_reg2), "=&r" (temp_reg3) \
-			: "a" (gpio_reg), "a" (mask), "a" (endmask), "a" (left_ptr), "a" (right_ptr)
+			: "a" (gpio_reg), "a" (mask), "a" (endmask), "a" (left_ptr), "a" (right_ptr) 
+			#ifdef DEBUG
+			, "a" (stereocount_ptr)
+			#endif
 		);
 		//totalSampleCounter++;
 		return;
@@ -242,7 +258,7 @@ void IRAM_ATTR isr_dssfifo() {
 
 void IRAM_ATTR isr_stereo_detect() {
 	last_stereo_signal = esp_timer_get_time();
-	stereocount++;
+	stereo_detect_count++;
 }
 
 void IRAM_ATTR isr_dss_detect() {
@@ -279,6 +295,7 @@ void change_mode(uint32_t new_mode) {
 	front = 0; back = 0;
 	totalSampleCounter = 0;
 	totalSamplesPlayed = 0;
+	stereocount = 0;
 	buffer_full = 0;
 
 	switch (new_mode) {
@@ -332,8 +349,10 @@ void app_main(void)
 
 	/* GPIO pins initialization */
 	PIN_TO_INPUT(D0); PIN_TO_INPUT(D1); PIN_TO_INPUT(D2); PIN_TO_INPUT(D3); PIN_TO_INPUT(D4); PIN_TO_INPUT(D5); PIN_TO_INPUT(D6); PIN_TO_INPUT(D7);
-	PIN_TO_INPUT(FIFOCLK); PIN_TO_OUTPUT(FIFOFULL); gpio_set_level(FIFOFULL, 0);
-	PIN_TO_INPUT(STEREO_CHANNEL_SELECT); PIN_TO_OUTPUT(STEREO_CHANNEL_SELECT_PULLUP); gpio_pullup_en(STEREO_CHANNEL_SELECT); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 1);
+	PIN_TO_INPUT(FIFOCLK); gpio_pullup_en(FIFOCLK);
+	PIN_TO_OUTPUT(FIFOFULL); gpio_set_level(FIFOFULL, 0);
+	PIN_TO_INPUT(STEREO_CHANNEL_SELECT); gpio_pullup_en(STEREO_CHANNEL_SELECT);
+	PIN_TO_OUTPUT(STEREO_CHANNEL_SELECT_PULLUP); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 0); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 1);
 	PIN_TO_OUTPUT(GPIO_COVOX); gpio_set_level(GPIO_COVOX, 0);
 	PIN_TO_OUTPUT(GPIO_DSS); gpio_set_level(GPIO_DSS, 0);
 	PIN_TO_OUTPUT(GPIO_STEREO); gpio_set_level(GPIO_STEREO, 0);
@@ -408,14 +427,14 @@ void app_main(void)
 			printf("esp_timer_get_time(): %u, ", newtime);
 			//printf("last_stereo: %u, ", newtime-last_stereo_signal);
 			//printf("last_dss: %u, ", newtime-last_dss_signal);
-			//printf("stereo_detect_count: %u, ", stereo_detect_count);
+			printf("stereocount: %u, ", stereocount);
 			//printf("mode: %u, ", mode);
 			printf("Mode: %s, ", MODE_STRING[mode]);
 			//printf("totalTaskCounter: %u, ", totalTaskCounter);
-			printf("totalSampleCounter: %u, ", totalSampleCounter);
-			printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
-			printf("difference: %u, ", totalSampleCounter-totalSamplesPlayed);
-			printf("difference: %u, ", totalSamplesPlayed-totalSampleCounter);
+			//printf("totalSampleCounter: %u, ", totalSampleCounter);
+			//printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
+			//printf("difference: %u, ", ((int)totalSamplesPlayed)-((int)totalSampleCounter));
+			//printf("difference: %i, ", ((int)totalSamplesPlayed)-((int)stereocount));
 			printf("\n");
 			oldtime += 1000000;
 		}
@@ -435,9 +454,9 @@ void app_main(void)
 		static uint32_t stereooldtime = 0, stereonewtime = 0;
 		stereonewtime = esp_timer_get_time();
 		if ( (stereonewtime - stereooldtime) < 2000000000L ) {
-			if ( stereocount > 500 ) change_mode(STEREO); //100000, 30khz, > 3000
+			if ( stereo_detect_count > 500 ) change_mode(STEREO); //100000, 30khz, > 3000
 			stereooldtime += 100000; //400000, duke3d < 500
-			stereocount = 0;
+			stereo_detect_count = 0;
 		}
 		if ( (mode == DSS) && !(REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) {
 			uint32_t last = last_dss_signal; // time when last falling edge happened
