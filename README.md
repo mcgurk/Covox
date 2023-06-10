@@ -47,6 +47,9 @@ GND | SCK (if GY-PCM5102)
 - Covox supported games: https://www.mobygames.com/attribute/sheet/attributeId,43/p,2/
 - Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
 - ESP32 DAC: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/dac.html
+- Xtensa® Instruction Set Architecture (ISA) Reference Manual: https://0x04.net/~mwk/doc/xtensa.pdf
+- https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
+- PCM5102: https://www.ti.com/lit/ds/symlink/pcm5100a.pdf
 
 # Misc stuff
 
@@ -68,8 +71,6 @@ lpt_dac = disney, covox, ston1, (or none/off)
 - https://github.com/MacLeod-D/ESp32-Fast-external-IRQs
 - Use I2S WCLK for unload buffer interrupt
 - DAC doesn't work with 7kHz so double samples to 14kHz
-- Xtensa® Instruction Set Architecture (ISA) Reference Manual: https://0x04.net/~mwk/doc/xtensa.pdf
-- https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
 
 #### Links
 - DSS supported games: https://www.mobygames.com/attribute/sheet/attributeId,44
