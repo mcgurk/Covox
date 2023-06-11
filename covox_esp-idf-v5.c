@@ -95,6 +95,7 @@ volatile uint32_t last_stereo_signal = 0;
 volatile uint32_t mode_change_flag = 0;
 volatile uint32_t stereo_detect_count = 0;
 volatile uint32_t stereocount = 0;
+volatile uint8_t mode_flag = 0;
 //volatile uint32_t debug = 0;
 
 i2s_chan_handle_t tx_handle;
@@ -120,6 +121,11 @@ i2s_std_config_t std_cfg = {
     },
 };
 
+#define check_zero(reg) \
+	uint8_t __sample = CONVERT_GPIOREG_TO_SAMPLE(reg); \
+	if ( (__sample == 0) && (mode_flag == 1) ) return; \
+	else mode_flag = 0;
+
 void covox_routine(void) {
 	while(1) {
 		register uint32_t a;
@@ -131,6 +137,7 @@ void covox_routine(void) {
 		uint32_t s2 = REG_READ(GPIO_IN_REG);
 		uint32_t s3 = REG_READ(GPIO_IN_REG);
 		if (s1 != s2) s1 = s3;
+		check_zero(s1); // !!
 		uint16_t out = (CONVERT_GPIOREG_TO_SAMPLE(s1) - 128) << VOLUME;
 		uint16_t i = totalSampleCounter & 2047;
 		buf[i] = (out << 16) | out;
@@ -226,6 +233,7 @@ void core1_task( void * pvParameters ) {
 
 void IRAM_ATTR isr_sample_stereo() {
 	uint32_t l = left, r = right;
+	check_zero(l); //check_zero(r); // !!
 	uint16_t out_left = (CONVERT_GPIOREG_TO_SAMPLE(l)-128) << VOLUME;
 	uint16_t out_right = (CONVERT_GPIOREG_TO_SAMPLE(r)-128) << VOLUME;
 	uint16_t i = totalSampleCounter & 2047;
@@ -323,21 +331,31 @@ void change_mode(uint32_t new_mode) {
 
 	i2s_channel_enable(tx_handle);
 	mode = new_mode;
+	mode_flag = 1;
 	//printf("New mode!: %u\n", mode);
 	ESP_LOGI(TAG, "New mode: %s", MODE_STRING[mode]);
 }
 
-#define PIN_TO_INPUT(pin) \
-		gpio_reset_pin(pin); \
-		gpio_pad_select_gpio(pin); \
-		gpio_set_direction(pin, GPIO_MODE_INPUT); \
-		gpio_pulldown_dis(pin); \
-		gpio_pullup_dis(pin);
+#define PIN_TO_INPUT(gpio_num) \
+    { gpio_config_t cfg = { \
+        .pin_bit_mask = BIT64(gpio_num), \
+        .mode = GPIO_MODE_INPUT, \
+        .pull_up_en = true, \
+        .pull_down_en = false, \
+        .intr_type = GPIO_INTR_DISABLE, \
+    }; \
+	gpio_config(&cfg); }
 
-#define PIN_TO_OUTPUT(pin) \
-		gpio_reset_pin(pin); \
-		gpio_pad_select_gpio(pin); \
-		gpio_set_direction(pin, GPIO_MODE_OUTPUT); \
+#define PIN_TO_OUTPUT(gpio_num) \
+    { gpio_config_t cfg = { \
+        .pin_bit_mask = BIT64(gpio_num), \
+        .mode = GPIO_MODE_OUTPUT, \
+        .pull_up_en = false, \
+        .pull_down_en = false, \
+        .intr_type = GPIO_INTR_DISABLE, \
+    }; \
+	gpio_config(&cfg); \
+	gpio_set_level(gpio_num, 0); }
 
 void app_main(void)
 {
@@ -349,13 +367,13 @@ void app_main(void)
 
 	/* GPIO pins initialization */
 	PIN_TO_INPUT(D0); PIN_TO_INPUT(D1); PIN_TO_INPUT(D2); PIN_TO_INPUT(D3); PIN_TO_INPUT(D4); PIN_TO_INPUT(D5); PIN_TO_INPUT(D6); PIN_TO_INPUT(D7);
-	PIN_TO_INPUT(FIFOCLK); gpio_pullup_en(FIFOCLK);
-	PIN_TO_OUTPUT(FIFOFULL); gpio_set_level(FIFOFULL, 0);
-	PIN_TO_INPUT(STEREO_CHANNEL_SELECT); gpio_pullup_en(STEREO_CHANNEL_SELECT);
+	PIN_TO_INPUT(FIFOCLK);
+	PIN_TO_OUTPUT(FIFOFULL);
+	PIN_TO_INPUT(STEREO_CHANNEL_SELECT);
 	PIN_TO_OUTPUT(STEREO_CHANNEL_SELECT_PULLUP); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 0); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 1);
-	PIN_TO_OUTPUT(GPIO_COVOX); gpio_set_level(GPIO_COVOX, 0);
-	PIN_TO_OUTPUT(GPIO_DSS); gpio_set_level(GPIO_DSS, 0);
-	PIN_TO_OUTPUT(GPIO_STEREO); gpio_set_level(GPIO_STEREO, 0);
+	PIN_TO_OUTPUT(GPIO_COVOX);
+	PIN_TO_OUTPUT(GPIO_DSS);
+	PIN_TO_OUTPUT(GPIO_STEREO);
 	gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
 	gpio_hal_input_enable(&gpiohal, GPIO_COVOX);
 	gpio_hal_input_enable(&gpiohal, GPIO_DSS);
