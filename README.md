@@ -50,6 +50,7 @@ GND | SCK (if GY-PCM5102)
 - Xtensa® Instruction Set Architecture (ISA) Reference Manual: https://0x04.net/~mwk/doc/xtensa.pdf
 - https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
 - PCM5102: https://www.ti.com/lit/ds/symlink/pcm5100a.pdf
+- Covox supported games: https://www.mobygames.com/attributes/attribute/43/
 
 # Misc stuff
 
