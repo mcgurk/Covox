@@ -96,7 +96,8 @@ volatile uint32_t mode_change_flag = 0;
 volatile uint32_t stereo_detect_count = 0;
 volatile uint32_t stereocount = 0;
 volatile uint8_t mode_flag = 0;
-//volatile uint32_t debug = 0;
+//volatile uint32_t debug1 = 0;
+//volatile uint32_t debug2 = 0;
 
 i2s_chan_handle_t tx_handle;
 i2s_std_config_t std_cfg = {
@@ -121,18 +122,16 @@ i2s_std_config_t std_cfg = {
     },
 };
 
-inline uint16_t get_sample_from_reg(uint32_t reg) {
-	uint8_t sample = CONVERT_GPIOREG_TO_SAMPLE(reg);
-	if ( (sample == 0) && (mode_flag == 1) ) {
-		return 0;
-	}
-	else {
-		mode_flag = 0;
-		return ( (sample - 128) << VOLUME );
-	}
+inline uint16_t get_sample_from_regvalue(uint32_t reg_value) {
+	uint8_t sample = CONVERT_GPIOREG_TO_SAMPLE(reg_value);
+	if ( mode_flag == 0 ) return ( (sample - 128) << VOLUME );
+	if ( sample == 0 ) return 0;
+	mode_flag = 0;
+	return ( (sample - 128) << VOLUME );
 }
 
 void covox_routine(void) {
+//debug1 = 1;
 	while(1) {
 		register uint32_t a;
 		do {
@@ -143,7 +142,8 @@ void covox_routine(void) {
 		uint32_t s2 = REG_READ(GPIO_IN_REG);
 		uint32_t s3 = REG_READ(GPIO_IN_REG);
 		if (s1 != s2) s1 = s3;
-		uint16_t out = get_sample_from_reg(s1);
+		//uint16_t out = (CONVERT_GPIOREG_TO_SAMPLE(s1)-128) << VOLUME;
+		uint16_t out = get_sample_from_regvalue(s1);
 		uint16_t i = totalSampleCounter & 2047;
 		buf[i] = (out << 16) | out;
 		if (i == 1023) buffer_full = 1;
@@ -158,6 +158,7 @@ void covox_routine(void) {
 }
 
 void dss_routine(void) {
+//debug1 = 2;
 	while(1) {
 		register uint32_t a;
 		do {
@@ -175,6 +176,7 @@ void dss_routine(void) {
 }
 
 void stereo_routine(void) {
+//debug1 = 3;
 	while (1) {
 		uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
 		const uint32_t gpio_reg = 0x3FF4403C, mask = (1<<STEREO_CHANNEL_SELECT), endmask = (1<<GPIO_STEREO);
@@ -185,24 +187,25 @@ void stereo_routine(void) {
 		#endif
 		__asm__ __volatile__(
 			"loop1: \n"
-			//"memw \n"
+			"memw \n"
 			"l32i.n	%0, %3, 0 \n" // read left channel
+			"bnone  %0, %5, end \n" // enable bit low, quit
 			"bnone	%0, %4, loop1 \n" // if LOW, go back to start
-			"bnone    %0, %5, end \n" // enable bit low, quit
 			//"memw \n"
 			//"l32i.n	%2, %3, 0 \n"
 			//"bnone	%2, %4, loop1 \n" // if LOW, go back to start
 			" \n"
 			"loop2: \n"
-			//"memw \n"
+			"memw \n"
 			"l32i.n	%1, %3, 0 \n" // read right channel
+			"bnone  %1, %5, end \n" // enable bit low, quit // maybe not needed?
 			"bany 	%1, %4, loop2 \n" // if HIGH, go back to start
 			//"memw \n"
 			//"l32i.n	%2, %3, 0 \n" //!why?
 			//"bany	  %2, %4, loop2 \n" //!why? // if HIGH, go back to start
-			//"memw \n"
+			"memw \n"
 			"s32i.n	%0, %6, 0 \n" // store left channel
-			//"memw \n"
+			"memw \n"
 			"s32i.n	%1, %7, 0 \n" // store right channel
 			// ----
 			#ifdef DEBUG
@@ -238,8 +241,8 @@ void core1_task( void * pvParameters ) {
 
 void IRAM_ATTR isr_sample_stereo() {
 	uint32_t l = left, r = right;
-	uint16_t out_left = get_sample_from_reg(l);
-	uint16_t out_right = get_sample_from_reg(r);
+	uint16_t out_left = get_sample_from_regvalue(l);
+	uint16_t out_right = get_sample_from_regvalue(r);
 	uint16_t i = totalSampleCounter & 2047;
 	buf[i] = (out_right << 16) | out_left;
 	if (i == 1023) buffer_full = 1;
@@ -302,7 +305,7 @@ void change_mode(uint32_t new_mode) {
 	}
 
 	// clean up
-	for (int i = 0; i < sizeof(buf)/sizeof(uint32_t); i++) buf[i] = 0;
+	//for (int i = 0; i < sizeof(buf)/sizeof(uint32_t); i++) buf[i] = 0;
 	for (int i = 0; i < sizeof(fifo_buf)/sizeof(uint32_t); i++) fifo_buf[i] = 0;
 	front = 0; back = 0;
 	totalSampleCounter = 0;
@@ -370,11 +373,18 @@ void app_main(void)
 	//ESP_LOGI(TAG, "ESP-IDF version: %s", IDF_VER);
 
 	/* GPIO pins initialization */
+	ESP_LOGI(TAG, "GPIO pins");
+	ESP_LOGI(TAG, "Data 0...7:");
 	PIN_TO_INPUT(D0); PIN_TO_INPUT(D1); PIN_TO_INPUT(D2); PIN_TO_INPUT(D3); PIN_TO_INPUT(D4); PIN_TO_INPUT(D5); PIN_TO_INPUT(D6); PIN_TO_INPUT(D7);
+	ESP_LOGI(TAG, "Fifo clock:");
 	PIN_TO_INPUT(FIFOCLK);
+	ESP_LOGI(TAG, "Fifo full:");
 	PIN_TO_OUTPUT(FIFOFULL);
+	ESP_LOGI(TAG, "Stereo channel select:");
 	PIN_TO_INPUT(STEREO_CHANNEL_SELECT);
+	ESP_LOGI(TAG, "Stereo channel select pullup:");
 	PIN_TO_OUTPUT(STEREO_CHANNEL_SELECT_PULLUP); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 0); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 1);
+	ESP_LOGI(TAG, "Mode (Covox, DSS, Stereo):");
 	PIN_TO_OUTPUT(GPIO_COVOX);
 	PIN_TO_OUTPUT(GPIO_DSS);
 	PIN_TO_OUTPUT(GPIO_STEREO);
@@ -408,7 +418,7 @@ void app_main(void)
 	result = i2s_channel_enable(tx_handle);
 	if (result != ESP_OK) printf("i2s_channel_enable failed!");
 
-	gpio_hal_input_enable(&gpiohal, I2S_WS_IO); // this makes possible to read I2S WS output-pin state and use it with GPIO-interrupt
+	gpio_hal_input_enable(&gpiohal, I2S_WS_IO); // this makes possible to read I2S WS output-pin state
 
 	change_mode(COVOX);
 
@@ -449,14 +459,17 @@ void app_main(void)
 			printf("esp_timer_get_time(): %u, ", newtime);
 			//printf("last_stereo: %u, ", newtime-last_stereo_signal);
 			//printf("last_dss: %u, ", newtime-last_dss_signal);
-			printf("stereocount: %u, ", stereocount);
+			//printf("stereocount: %u, ", stereocount);
 			//printf("mode: %u, ", mode);
+			printf("covox pin: %u, ", gpio_get_level(GPIO_COVOX));
 			printf("Mode: %s, ", MODE_STRING[mode]);
-			//printf("totalTaskCounter: %u, ", totalTaskCounter);
-			//printf("totalSampleCounter: %u, ", totalSampleCounter);
+			printf("totalTaskCounter: %u, ", totalTaskCounter);
+			printf("totalSampleCounter: %u, ", totalSampleCounter);
 			//printf("totalSamplesPlayed: %u, ", totalSamplesPlayed);
 			//printf("difference: %u, ", ((int)totalSamplesPlayed)-((int)totalSampleCounter));
 			//printf("difference: %i, ", ((int)totalSamplesPlayed)-((int)stereocount));
+			//printf("mode_flag: %u, ", mode_flag);
+			printf("debug1: %u, ", debug1);
 			printf("\n");
 			oldtime += 1000000;
 		}
