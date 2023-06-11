@@ -71,7 +71,7 @@ static const char* TAG = "McGurk_Covox/DSS/StereoIn1-system";
 #define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 #define SAMPLE_RATE_DSS (14000)
 #define SAMPLE_RATE_COVOX (96000)
-//#define SAMPLE_RATE_COVOX (88200)
+//#define SAMPLE_RATE_COVOX (32000)
 
 #define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
 TaskHandle_t myTaskHandle = NULL;
@@ -121,11 +121,6 @@ i2s_std_config_t std_cfg = {
     },
 };
 
-/*#define check_zero(reg) \
-	uint8_t __sample = CONVERT_GPIOREG_TO_SAMPLE(reg); \
-	if ( (__sample == 0) && (mode_flag == 1) ) return; \
-	else mode_flag = 0;*/
-
 inline uint16_t get_sample_from_reg(uint32_t reg) {
 	uint8_t sample = CONVERT_GPIOREG_TO_SAMPLE(reg);
 	if ( (sample == 0) && (mode_flag == 1) ) {
@@ -148,8 +143,6 @@ void covox_routine(void) {
 		uint32_t s2 = REG_READ(GPIO_IN_REG);
 		uint32_t s3 = REG_READ(GPIO_IN_REG);
 		if (s1 != s2) s1 = s3;
-		//check_zero(s1); // !!
-		//uint16_t out = (CONVERT_GPIOREG_TO_SAMPLE(s1) - 128) << VOLUME;
 		uint16_t out = get_sample_from_reg(s1);
 		uint16_t i = totalSampleCounter & 2047;
 		buf[i] = (out << 16) | out;
@@ -245,9 +238,6 @@ void core1_task( void * pvParameters ) {
 
 void IRAM_ATTR isr_sample_stereo() {
 	uint32_t l = left, r = right;
-	//check_zero(l); //check_zero(r); // !!
-	//uint16_t out_left = (CONVERT_GPIOREG_TO_SAMPLE(l)-128) << VOLUME;
-	//uint16_t out_right = (CONVERT_GPIOREG_TO_SAMPLE(r)-128) << VOLUME;
 	uint16_t out_left = get_sample_from_reg(l);
 	uint16_t out_right = get_sample_from_reg(r);
 	uint16_t i = totalSampleCounter & 2047;
@@ -264,7 +254,7 @@ void IRAM_ATTR isr_sample_stereo() {
 void IRAM_ATTR isr_dssfifo() {
 	static uint32_t out = 0;
 	uint16_t i = totalSampleCounter & 255;
-	if (i&1) {// read new "out" only every other time
+	if (i&1) { // read new "out" only every other time
 		if (fcnt > 0) {
 			uint32_t reg = fifo_buf[front++];
 			uint16_t s = (CONVERT_GPIOREG_TO_SAMPLE(reg)-128) << VOLUME;
