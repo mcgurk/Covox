@@ -125,7 +125,7 @@ n pin17.com
 a100
 mov dx,37a
 in al,dx
-or al,8             ; bit 4 high -> pin 17 low (and al,F7 to high)
+or al,8             ; bit 4 high -> pin 17 low ("and al,F7" would get it to high)
 out dx,al
 ret
 
