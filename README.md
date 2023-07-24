@@ -26,7 +26,7 @@ IO19 ⚪ | 17 (FIFOCLK) (Select Printer_) (PC->DSS)
 IO22 🐺 | 10 (FIFOFULL) (ACK) (DSS->PC)
 **Stereo-In-1:** | 
 IO4 🟤 | 1 (Strobe_) (channel select PC->Covox)
-&nbsp; | resistor between IO4 and IO25 for external pullup (I have 2.15kohm, 4.7kohm might work too)
+&nbsp; | resistor between IO4 and 5V for external pullup (I have 2.15kohm, 4.7kohm might work too)
 **ESP32:** | **I2S DAC:**
 5V 🔴 | Vin (use 5V if possible, more stable)
 GND ⚫ | Ground
