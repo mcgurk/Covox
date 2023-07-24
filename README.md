@@ -120,7 +120,7 @@ disney=true
 ### Create utility to get LPT pin 17 (fifoclk) to low with DOS debug-command
 Press enter after every line (also when there is empty line).
 ```
-debug
+C:\>debug
 n pin17.com
 a100
 mov dx,37a
