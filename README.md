@@ -55,18 +55,6 @@ GND | SCK (if GY-PCM5102)
 - LPT: https://www.epanorama.net/circuits/lptpower.html
 - LPT: https://www.edaboard.com/threads/parallel-port-max-current-sink-output.49356/
 
-# Misc stuff
-
-#### ASM
-```
-C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc\esp-2021r2-patch5-8.4.0\bin\xtensa-esp32-elf-objdump.exe -S C:\Users\lehti\OneDrive\Documents\Arduino\esp32pico_i2s_covox-dss\build\esp32.esp32.esp32\esp32pico_i2s_covox-dss.ino.elf > c:\temp\koe.txt
-```
-
-## DosBox
-```
-[speaker]
-disney=true
-```
 
 ## Disney Sound Source / DSS
 
@@ -99,8 +87,26 @@ disney=true
 - https://datasheet.octopart.com/PM7528HP-Analog-Devices-datasheet-11801523.pdf
 - http://loboris.eu/ESP32/Xtensa%20Instruction%20Set%20Architecture.pdf
 - https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
-- 2,15kohm between two gpio (example IO4 and IO26). it works as switchable external pullup for stereo select signal. it is very weak and crucial for operation. 
+- 2,15kohm between gpio and 5V. It is very weak and crucial for operation. 
 - Problem in autodetection: after stereo player (iplay, dmp, crystal dreams) DSS-enable signal (LPT pin17) stays up. To get back to normal covox you have to start DSS-program or some other means drop DSS-enable signal down.
+
+# Misc stuff
+
+### Compaq Contura 430C (486, 100MHz) problem
+- https://www.retrospace.net/download/Compaq%20LTE%20Elite%204-75CX%20Drivers%20and%20Utilities/
+ - sp1630.exe "EPP Support Utility Version 2.00 Rev. A"
+ 
+
+### ASM
+```
+C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc\esp-2021r2-patch5-8.4.0\bin\xtensa-esp32-elf-objdump.exe -S C:\Users\lehti\OneDrive\Documents\Arduino\esp32pico_i2s_covox-dss\build\esp32.esp32.esp32\esp32pico_i2s_covox-dss.ino.elf > c:\temp\koe.txt
+```
+
+### DosBox
+```
+[speaker]
+disney=true
+```
 
 ## Old garbage
 
