@@ -127,8 +127,8 @@ mov dx,37a          ; 37Ah = LPT control pins port
 in al,dx            ; read current state from port
 or al,8             ; bit 4 high -> pin 17 low ("and al,F7" would get it to high)
 out dx,al           ; write new state to port
-ret
-
+ret                 ; return to DOS
+                    ; end assembler mode with empty line
 rcx                 ; give how many bytes to write in cx register
 8                   ; 8 bytes to write
 w                   ; write file
