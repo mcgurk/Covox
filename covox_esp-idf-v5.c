@@ -142,16 +142,11 @@ void covox_routine(void) {
 		uint32_t s2 = REG_READ(GPIO_IN_REG);
 		uint32_t s3 = REG_READ(GPIO_IN_REG);
 		if (s1 != s2) s1 = s3;
-		//uint16_t out = (CONVERT_GPIOREG_TO_SAMPLE(s1)-128) << VOLUME;
 		uint16_t out = get_sample_from_regvalue(s1);
 		uint16_t i = totalSampleCounter & 2047;
 		buf[i] = (out << 16) | out;
 		if (i == 1023) buffer_full = 1;
 		if (i == 2047) buffer_full = 2;
-		/*if (i == 511) buffer_full = 1;
-		if (i == 1023) buffer_full = 2;
-		if (i == 1535) buffer_full = 3;
-		if (i == 2047) buffer_full = 4;*/
 		totalSampleCounter++;
 		while ((REG_READ(GPIO_IN_REG) & (1<<I2S_WS_IO))); // wait while I2S_WS signal is HIGH. this syncronizes routine to I2S WS clock
 	}
@@ -187,39 +182,33 @@ void stereo_routine(void) {
 		#endif
 		__asm__ __volatile__(
 			"loop1: \n"
-			"memw \n"
-			"l32i.n	%0, %3, 0 \n" // read left channel
-			"bnone  %0, %5, end \n" // enable bit low, quit
-			"bnone	%0, %4, loop1 \n" // if LOW, go back to start
 			//"memw \n"
-			//"l32i.n	%2, %3, 0 \n"
-			//"bnone	%2, %4, loop1 \n" // if LOW, go back to start
+			"l32i.n	%[T1], %[GPIO], 0 \n" // read left channel
+			"bnone  %[T1], %[ENDMASK], end \n" // enable bit low, quit
+			"bnone	%[T1], %[MASK], loop1 \n" // if LOW, go back to start
 			" \n"
 			"loop2: \n"
-			"memw \n"
-			"l32i.n	%1, %3, 0 \n" // read right channel
-			"bnone  %1, %5, end \n" // enable bit low, quit // maybe not needed?
-			"bany 	%1, %4, loop2 \n" // if HIGH, go back to start
 			//"memw \n"
-			//"l32i.n	%2, %3, 0 \n" //!why?
-			//"bany	  %2, %4, loop2 \n" //!why? // if HIGH, go back to start
-			"memw \n"
-			"s32i.n	%0, %6, 0 \n" // store left channel
-			"memw \n"
-			"s32i.n	%1, %7, 0 \n" // store right channel
+			"l32i.n	%[T2], %[GPIO], 0 \n" // read right channel
+			//"bnone  %[T2], %[ENDMASK], end \n" // enable bit low, quit // maybe not needed?
+			"bany 	%[T2], %[MASK], loop2 \n" // if HIGH, go back to start
+			//"memw \n"
+			"s32i.n	%[T1], %[LEFT], 0 \n" // store left channel
+			//"memw \n"
+			"s32i.n	%[T2], %[RIGHT], 0 \n" // store right channel
 			// ----
 			#ifdef DEBUG
-			"l32i.n %0, %8, 0 \n" // inc stereocount
-			"addi %0, %0, 1 \n"
-			"s32i.n %0, %8, 0 \n"
+			"l32i.n %[T1], %[COUNT], 0 \n" // inc stereocount
+			"addi %[T1], %[T1], 1 \n"
+			"s32i.n %[T1], %[COUNT], 0 \n"
 			#endif
 			// ----
 			"j loop1 \n"
 			"end: \n"
-			: "=&r" (temp_reg), "=&r" (temp_reg2), "=&r" (temp_reg3) \
-			: "a" (gpio_reg), "a" (mask), "a" (endmask), "a" (left_ptr), "a" (right_ptr) 
+			: [T1]"=&r" (temp_reg), [T2]"=&r" (temp_reg2), [T3]"=&r" (temp_reg3) \
+			: [GPIO]"a" (gpio_reg), [MASK]"a" (mask), [ENDMASK]"a" (endmask), [LEFT]"a" (left_ptr), [RIGHT]"a" (right_ptr) 
 			#ifdef DEBUG
-			, "a" (stereocount_ptr)
+			, [COUNT]"a" (stereocount_ptr)
 			#endif
 		);
 		//totalSampleCounter++;
@@ -228,7 +217,6 @@ void stereo_routine(void) {
 }
 
 void core1_task( void * pvParameters ) {
-	//printf("core1_task running on core: %i\n", xPortGetCoreID());
 	ESP_LOGI(TAG, "'core1_task' running on core: %i", xPortGetCoreID());
 	portDISABLE_INTERRUPTS();
 	while(1) {
@@ -247,10 +235,6 @@ void IRAM_ATTR isr_sample_stereo() {
 	buf[i] = (out_right << 16) | out_left;
 	if (i == 1023) buffer_full = 1;
 	if (i == 2047) buffer_full = 2;
-	/*if (i == 511) buffer_full = 1;
-	if (i == 1023) buffer_full = 2;
-	if (i == 1535) buffer_full = 3;
-	if (i == 2047) buffer_full = 4;*/
 	totalSampleCounter++;
 }
 
@@ -339,7 +323,6 @@ void change_mode(uint32_t new_mode) {
 	i2s_channel_enable(tx_handle);
 	mode = new_mode;
 	mode_flag = 1;
-	//printf("New mode!: %u\n", mode);
 	ESP_LOGI(TAG, "New mode: %s", MODE_STRING[mode]);
 }
 
@@ -435,10 +418,6 @@ void app_main(void)
 		if ((mode != DSS) && buffer_full) {
 			if (buffer_full == 1) result = i2s_channel_write(tx_handle, &buf[0], 1024*4, &i2s_bytes_write, portMAX_DELAY);
 			if (buffer_full == 2) result = i2s_channel_write(tx_handle, &buf[1024], 1024*4, &i2s_bytes_write, portMAX_DELAY);
-			/*if (buffer_full == 1) result = i2s_channel_write(tx_handle, &buf[0], 512*4, &i2s_bytes_write, portMAX_DELAY);
-			if (buffer_full == 2) result = i2s_channel_write(tx_handle, &buf[512], 512*4, &i2s_bytes_write, portMAX_DELAY);
-			if (buffer_full == 3) result = i2s_channel_write(tx_handle, &buf[1024], 512*4, &i2s_bytes_write, portMAX_DELAY);
-			if (buffer_full == 4) result = i2s_channel_write(tx_handle, &buf[1536], 512*4, &i2s_bytes_write, portMAX_DELAY);*/
 			if (result != ESP_OK) printf("i2s_channel_write (Covox/StereoIn1) failed!");
 			buffer_full = 0;
 			totalSamplesPlayed += i2s_bytes_write/4;
