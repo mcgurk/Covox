@@ -87,7 +87,7 @@ GND | SCK (if GY-PCM5102)
 - https://datasheet.octopart.com/PM7528HP-Analog-Devices-datasheet-11801523.pdf
 - http://loboris.eu/ESP32/Xtensa%20Instruction%20Set%20Architecture.pdf
 - https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
-- 2,15kohm between gpio and 5V. Signal select signal is very fast (weak) and pullup is crucial for operation. 
+- 2,15kohm between gpio and 5V. Channelselect signal is very fast (weak) and pullup is crucial for operation. 
 - Problem in autodetection: after stereo player (iplay, dmp, crystal dreams) DSS-enable signal (LPT pin17) stays up. To get back to normal covox you have to start DSS-program or some other means drop DSS-enable signal down.
 
 #### Solve to Compaq Contura 430C (486, 100MHz) problem with stereo-in-1 (random crackling)
