@@ -117,7 +117,7 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 disney=true
 ```
 
-### utility to get LPT pin 17 (fifoclk) to low
+### Create utility to get LPT pin 17 (fifoclk) to low with DOS debug-command
 Press enter after every line (also when there is empty line).
 ```
 debug
