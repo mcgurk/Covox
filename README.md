@@ -90,9 +90,7 @@ GND | SCK (if GY-PCM5102)
 - 2,15kohm between gpio and 5V. It is very weak and crucial for operation. 
 - Problem in autodetection: after stereo player (iplay, dmp, crystal dreams) DSS-enable signal (LPT pin17) stays up. To get back to normal covox you have to start DSS-program or some other means drop DSS-enable signal down.
 
-# Misc stuff
-
-### Solve to Compaq Contura 430C (486, 100MHz) problem with stereo-in-1 (random crackling)
+#### Solve to Compaq Contura 430C (486, 100MHz) problem with stereo-in-1 (random crackling)
 - https://www.retrospace.net/download/Compaq%20LTE%20Elite%204-75CX%20Drivers%20and%20Utilities/
   - sp1630.exe, "EPP Support Utility Version 2.00 Rev. A", eppbios.sys (copy EPPBIOS.SYS to C:\CPQDOS\)
   - sp2158.exe, "Parallel Port Configuration 1.00 A", setport.exe (copy SETPORT.EXE to C:\CPQDOS\)
@@ -106,6 +104,7 @@ autoexec.bat:
 C:\CPQDOS\SETPORT.EXE 3
 ```
 
+# Misc stuff
 
 ### ASM
 ```
