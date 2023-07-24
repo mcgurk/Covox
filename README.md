@@ -78,13 +78,12 @@ GND | SCK (if GY-PCM5102)
 - Wolfenstein 3D: writes 32 samples to FIFO and checks that FIFOFULL pin activates
 - Commander Keen in Keen Dreams (KDreams): v1.0 detects DSS. 33 sample interrupts comes trough. Notice: DSS is not actually supported at all in the game.
 
-## Stereo
-
-- Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463 (LPT pin 1) -> not possible. Pulse is too fast for ESP32. (or is it...)
+## Stereo-in-1
+- 2,15kohm between gpio and 5V. Channelselect signal is very fast (weak) and pullup is crucial for operation. 
+- Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463 (LPT pin 1)
 - https://datasheet.octopart.com/PM7528HP-Analog-Devices-datasheet-11801523.pdf
 - http://loboris.eu/ESP32/Xtensa%20Instruction%20Set%20Architecture.pdf
 - https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
-- 2,15kohm between gpio and 5V. Channelselect signal is very fast (weak) and pullup is crucial for operation. 
 - Problem in autodetection: after stereo player (iplay, dmp, crystal dreams) DSS-enable signal (LPT pin17) stays up. To get back to normal covox you have to start DSS-program or some other means drop DSS-enable signal down.
 
 #### Solve to Compaq Contura 430C (486, 100MHz) problem with stereo-in-1 (random crackling)
@@ -107,6 +106,12 @@ C:\CPQDOS\SETPORT.EXE 3
 ```
 [speaker]
 disney=true
+```
+
+### DMP
+```
+dmp -c6 -p378 -s44100 -q song.mod # covox
+dmp -c12 -p378 -s30000 -q song.mod # stereo-in-one
 ```
 
 ### Create utility to get LPT pin 17 (fifoclk) to low with DOS debug-command
