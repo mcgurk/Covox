@@ -65,7 +65,7 @@ C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc
 ## DosBox
 ```
 [speaker]
-lpt_dac = disney, covox, ston1, (or none/off)
+disney=true
 ```
 
 ## Disney Sound Source / DSS
@@ -139,7 +139,12 @@ buf[i] = (0x80<<24) | (s<<8); // IO26 = 0x80, IO25 = sample
 - ESP32-PICO-KIT with ESP32-PICO-D4 or ESP32 dev board or Wemos D1 mini ESP32
 
  (for ESP32 internal DAC: Mono 2.5W Class D Audio Amplifier - PAM8302)
- 
+
+ ```
+[speaker]
+lpt_dac = disney, covox, ston1, (or none/off)
+```
+
  ESP32 | amplifier
 --- | ---
 (**Amplifier:**) |
