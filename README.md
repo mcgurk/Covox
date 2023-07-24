@@ -1,6 +1,6 @@
 
 # Covox, Disney Sound Source (DSS), Stereo in 1
-Trying to make parallel port / LPT soundcard Covox with microcontroller
+Parallel port / LPT soundcard with microcontroller. Supports Covox Speech Thing (aka Intersound MDO), Disney Sound Source (DSS) and Tereo-in-1 dac.
 
 ## Parts
 
