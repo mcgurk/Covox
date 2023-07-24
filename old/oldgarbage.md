@@ -1,5 +1,11 @@
 ## Old garbage
 
+### ASM
+```
+C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc\esp-2021r2-patch5-8.4.0\bin\xtensa-esp32-elf-objdump.exe -S C:\Users\lehti\OneDrive\Documents\Arduino\esp32pico_i2s_covox-dss\build\esp32.esp32.esp32\esp32pico_i2s_covox-dss.ino.elf > c:\temp\koe.txt
+```
+
+
 ESP32 DAC output: 25, GND
 
 (to filter DC out put e.g. 10uF capacitor between 25 and out+. to filter noise put 560ohm resistor between 25 and 10uF capacitor and 0.01...0.1uF capacitor between 560ohm and gnd)
