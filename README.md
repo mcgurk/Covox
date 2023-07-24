@@ -94,7 +94,7 @@ GND | SCK (if GY-PCM5102)
 
 ### Compaq Contura 430C (486, 100MHz) problem
 - https://www.retrospace.net/download/Compaq%20LTE%20Elite%204-75CX%20Drivers%20and%20Utilities/
- - sp1630.exe "EPP Support Utility Version 2.00 Rev. A"
+  - sp1630.exe "EPP Support Utility Version 2.00 Rev. A"
  
 
 ### ASM
