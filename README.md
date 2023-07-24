@@ -121,16 +121,16 @@ disney=true
 Press enter after every line (also when there is empty line).
 ```
 C:\>debug
-n pin17.com
-a100
-mov dx,37a
-in al,dx
+n pin17.com         ; filename
+a100                ; assemble to address :0100
+mov dx,37a          ; 37Ah = LPT control pins port
+in al,dx            ; read current state from port
 or al,8             ; bit 4 high -> pin 17 low ("and al,F7" would get it to high)
-out dx,al
+out dx,al           ; write new state to port
 ret
 
-rcx
-8
-w
-q
+rcx                 ; give how many bytes to write in cx register
+8                   ; 8 bytes to write
+w                   ; write file
+q                   ; quit
 ```
