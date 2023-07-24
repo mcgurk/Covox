@@ -102,7 +102,7 @@ C:\CPQDOS\SETPORT.EXE 3
 
 # Misc stuff
 
-### DosBox
+### DOSBox
 ```
 [speaker]
 disney=true
