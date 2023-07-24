@@ -52,6 +52,7 @@ GND | SCK (if GY-PCM5102)
 - PCM5102: https://www.ti.com/lit/ds/symlink/pcm5100a.pdf
 - Covox supported games: https://www.mobygames.com/attributes/attribute/43/
 - DSS/Covox exclusive games? https://www.vogons.org/viewtopic.php?t=57885
+- LPT: https://www.epanorama.net/circuits/lptpower.html
 
 # Misc stuff
 
