@@ -75,11 +75,8 @@ GND | SCK (if GY-PCM5102)
 
 #### DSS checks
 - Dungeon Master DSS detection: https://www.vogons.org/viewtopic.php?t=40751
-- Wolfenstein 3D writes 32 samples to FIFO and checks that FIFOFULL pin activates
-
-#### KDreams
-- doesn't detect
-- 33 sample interrupts comes trough
+- Wolfenstein 3D: writes 32 samples to FIFO and checks that FIFOFULL pin activates
+- Commander Keen in Keen Dreams (KDreams): v1.0 detects DSS. 33 sample interrupts comes trough. Notice: DSS is not actually supported at all in the game.
 
 ## Stereo
 
