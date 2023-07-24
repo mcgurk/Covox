@@ -81,8 +81,8 @@ GND | SCK (if GY-PCM5102)
 ## Stereo-in-1
 - 2,15kohm between gpio and 5V. Channelselect signal is very fast (weak) and pullup is crucial for operation. 
 - Stereo in 1: Crystal Dream https://www.pouet.net/prod.php?which=463 (LPT pin 1)
-- Inertia Player: https://www.pouet.net/prod.php?which=29208
-- 
+- Inertia Player 1.22: https://www.pouet.net/prod.php?which=29208
+- Dual Module Player 3.00: https://demozoo.org/productions/270776/
 - https://datasheet.octopart.com/PM7528HP-Analog-Devices-datasheet-11801523.pdf
 - http://loboris.eu/ESP32/Xtensa%20Instruction%20Set%20Architecture.pdf
 - https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
