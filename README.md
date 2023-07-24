@@ -106,11 +106,6 @@ C:\CPQDOS\SETPORT.EXE 3
 
 # Misc stuff
 
-### ASM
-```
-C:\Users\lehti\AppData\Local\Arduino15\packages\esp32\tools\xtensa-esp32-elf-gcc\esp-2021r2-patch5-8.4.0\bin\xtensa-esp32-elf-objdump.exe -S C:\Users\lehti\OneDrive\Documents\Arduino\esp32pico_i2s_covox-dss\build\esp32.esp32.esp32\esp32pico_i2s_covox-dss.ino.elf > c:\temp\koe.txt
-```
-
 ### DosBox
 ```
 [speaker]
