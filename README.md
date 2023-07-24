@@ -53,6 +53,7 @@ GND | SCK (if GY-PCM5102)
 - Covox supported games: https://www.mobygames.com/attributes/attribute/43/
 - DSS/Covox exclusive games? https://www.vogons.org/viewtopic.php?t=57885
 - LPT: https://www.epanorama.net/circuits/lptpower.html
+- LPT: https://www.edaboard.com/threads/parallel-port-max-current-sink-output.49356/
 
 # Misc stuff
 
