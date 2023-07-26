@@ -118,6 +118,14 @@ or
 SET DMP=-c12 -p378 -s30000 -q
 ```
 
+### FastDoom
+- https://github.com/viti95/FastDoom
+- You need wad file from shareware or retail version
+- To get music (with fx) from Covox/DSS, you need music as raw files. There is OGG-files in Steam version, but you may find some Doom ogg-files with google also. You see filenames and how to convert ogg files to raw files from this script: https://github.com/viti95/FastDoom/blob/master/SCRIPTS/PCMconvert/convert.sh
+- PCM Music format is unsigned 8-bit PCM, and supports 11025, 22050 or 44100 Hz frequencies. 
+- With Covox: Convert ogg to raw in same samplerate as you are selected from fdsetup. Notice that this also affects to minimum memory requirements (whole raw-file must fit to memory at once)
+
+
 ### Create utility to get LPT pin 17 (fifoclk) to low with DOS debug-command
 Press enter after every line (also when there is empty line).
 ```
