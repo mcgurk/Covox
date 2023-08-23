@@ -1,8 +1,8 @@
 /*
-Covox/DSS/StereoIn1 implementation for ESP-IDF 5.0.2, ESP32-PICO-KIT and GY-PCM5102 by McGurk
+Covox/DSS/StereoIn1 implementation for ESP-IDF 5.1.1, ESP32-PICO-KIT and GY-PCM5102 by McGurk
 
 https://dl.espressif.com/dl/esp-idf/
-ESP-IDF v5.0.2 - Offline Installer (768MB) / esp-idf-tools-setup-offline-5.0.2.exe
+ESP-IDF v5.1.1
 
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
 https://www.ti.com/lit/ds/symlink/pcm5102.pdf
@@ -98,7 +98,7 @@ volatile uint32_t mode_change_flag = 0;
 volatile uint32_t stereo_detect_count = 0;
 volatile uint32_t stereocount = 0;
 volatile uint8_t mode_flag = 0;
-//volatile uint32_t debug1 = 0;
+volatile uint32_t debug1 = 0;
 //volatile uint32_t debug2 = 0;
 
 i2s_chan_handle_t tx_handle;
@@ -194,7 +194,7 @@ void stereo_routine(void) {
 			"loop2: \n"
 			//"memw \n"
 			"l32i.n	%[T2], %[GPIO], 0 \n" // read right channel
-			//"bnone  %[T2], %[ENDMASK], end \n" // enable bit low, quit // maybe not needed?
+			"bnone  %[T2], %[ENDMASK], end \n" // enable bit low, quit // maybe not needed? this is needed!
 			"bany 	%[T2], %[MASK], loop2 \n" // if HIGH, go back to start
 			//"memw \n"
 			"s32i.n	%[T1], %[LEFT], 0 \n" // store left channel
@@ -216,6 +216,7 @@ void stereo_routine(void) {
 			#endif
 		);
 		//totalSampleCounter++;
+		debug1 = 1;
 		return;
 	}
 }
@@ -284,7 +285,6 @@ void change_mode(uint32_t new_mode) {
 		gpio_isr_handler_remove(I2S_WS_IO);
 		break;
 	case STEREO:
-		//gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 0);
 		gpio_set_level(GPIO_STEREO, 0);
 		gpio_isr_handler_remove(I2S_WS_IO);
 		break;
@@ -293,8 +293,7 @@ void change_mode(uint32_t new_mode) {
 	}
 
 	// clean up
-	//for (int i = 0; i < sizeof(buf)/sizeof(uint32_t); i++) buf[i] = 0;
-	for (int i = 0; i < sizeof(fifo_buf)/sizeof(uint32_t); i++) fifo_buf[i] = 0;
+	//for (int i = 0; i < sizeof(fifo_buf)/sizeof(uint32_t); i++) fifo_buf[i] = 0;
 	front = 0; back = 0;
 	totalSampleCounter = 0;
 	totalSamplesPlayed = 0;
@@ -305,6 +304,8 @@ void change_mode(uint32_t new_mode) {
 	case COVOX:
 		std_cfg.clk_cfg.sample_rate_hz = SAMPLE_RATE_COVOX;
 		i2s_channel_reconfig_std_clock(tx_handle, &std_cfg.clk_cfg);
+		//gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
+		//gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
 		gpio_set_level(GPIO_COVOX, 1);
 		break;
 	case DSS:
@@ -314,7 +315,6 @@ void change_mode(uint32_t new_mode) {
 		gpio_set_level(GPIO_DSS, 1);
 		break;
 	case STEREO:
-		//gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 1);
 		std_cfg.clk_cfg.sample_rate_hz = SAMPLE_RATE_COVOX;
 		i2s_channel_reconfig_std_clock(tx_handle, &std_cfg.clk_cfg);
 		gpio_isr_handler_add(I2S_WS_IO, isr_sample_stereo, NULL);
@@ -369,8 +369,6 @@ void app_main(void)
 	PIN_TO_OUTPUT(FIFOFULL);
 	ESP_LOGI(TAG, "Stereo channel select:");
 	PIN_TO_INPUT(STEREO_CHANNEL_SELECT);
-	ESP_LOGI(TAG, "Stereo channel select pullup:");
-	//PIN_TO_OUTPUT(STEREO_CHANNEL_SELECT_PULLUP); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 0); //gpio_set_level(STEREO_CHANNEL_SELECT_PULLUP, 1);
 	ESP_LOGI(TAG, "Mode (Covox, DSS, Stereo):");
 	PIN_TO_OUTPUT(GPIO_COVOX);
 	PIN_TO_OUTPUT(GPIO_DSS);
