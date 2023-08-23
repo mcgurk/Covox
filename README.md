@@ -138,7 +138,7 @@ IO22 🟡 | 6 (D4)
 IO23 🔴 | 7 (D5)
 IO13 🔘 | 8 (D6)
 IO14 🟣 | 9 (D7)
-GND | GND (18-25)
+GND ⚫ | GND (18-25)
 **DSS:** | 
 IO9 ⚪ | 17 (FIFOCLK) (Select Printer_) (PC->DSS)
 IO10 ⚫ | 10 (FIFOFULL) (ACK) (DSS->PC)
