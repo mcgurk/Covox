@@ -52,7 +52,7 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 
 #define I2S_DO_IO       (GPIO_NUM_25)	// OUTPUT (*
 #define I2S_BCK_IO      (GPIO_NUM_32) 	// OUTPUT (*
-#define I2S_WS_IO       (GPIO_NUM_26)	// OUTPUT (*
+#define I2S_WS_IO       (GPIO_NUM_26)	// OUTPUT (* //MUST BE 0-31! (GPIO_IN_REG)
 
 #define FIFOCLK 	(GPIO_NUM_9)	// INPUT	// white2 // fifoclock, 17 (Select Printer_), PC(LPT)->DSS(ESP32))
 #define FIFOFULL 	(GPIO_NUM_10)	// OUTPUT	// black2 // fifofull, 10 (ACK), DSS(ESP32)->PC(LPT))
