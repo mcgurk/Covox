@@ -68,7 +68,7 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 
 /* Pin definition ends */
 
-static const char* TAG = "McGurk-Covox/DSS/StereoIn1-system (MCDS)";
+static const char* TAG = "McGurk-Covox/DSS/StereoIn1-System (MCDSS)";
 
 #define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 #define SAMPLE_RATE_DSS (14000)
