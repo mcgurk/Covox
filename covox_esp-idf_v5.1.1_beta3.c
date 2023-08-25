@@ -1,8 +1,8 @@
 /*
-Covox/DSS/StereoIn1 implementation for ESP-IDF 5.1.1, ESP32-PICO-KIT and GY-PCM5102 by McGurk
+Covox/DSS/StereoIn1 implementation for ESP-IDF 5.0.2, ESP32-PICO-KIT and GY-PCM5102 by McGurk
 
 https://dl.espressif.com/dl/esp-idf/
-ESP-IDF v5.1.1
+ESP-IDF v5.0.2 - Offline Installer (768MB) / esp-idf-tools-setup-offline-5.0.2.exe
 
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
 https://www.ti.com/lit/ds/symlink/pcm5102.pdf
@@ -24,7 +24,7 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #include "soc/gpio_reg.h" // GPIO_IN_REG
 #include "rom/gpio.h" // gpio_pad_select_gpio
 #include "hal/gpio_hal.h" // gpio_hal_context_t
-#include "esp_log.h" // ESP_LOGI
+#include "esp_log.h" // ESP_LOGI/W/E
 #include "esp_timer.h" // esp_timer_get_time
 #include "soc/rtc.h" // rtc_cpu_freq_config_t
 #include "driver/i2s_std.h" // I2S
@@ -58,11 +58,11 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 #define FIFOFULL 	(GPIO_NUM_10)	// OUTPUT	// black2 // fifofull, 10 (ACK), DSS(ESP32)->PC(LPT))
 
 #define STEREO_CHANNEL_SELECT 			(GPIO_NUM_4)	//white1 // INPUT
-//#define STEREO_CHANNEL_SELECT_PULLUP 	(GPIO_NUM_25)	// OUTPUT (*
 
 #define GPIO_COVOX 		(GPIO_NUM_2)	// OUTPUT/INPUT (doesn't need physical pin)
-#define GPIO_DSS 		(GPIO_NUM_12)	// OUTPUT/INPUT (doesn't need physical pin)
-#define GPIO_STEREO 	(GPIO_NUM_15)	// OUTPUT/INPUT (doesn't need physical pin)
+#define GPIO_DSS 		(GPIO_NUM_5)	// OUTPUT/INPUT (doesn't need physical pin)
+#define GPIO_STEREO 	(GPIO_NUM_12)	// OUTPUT/INPUT (doesn't need physical pin)
+#define GPIO_STEREO_INV	(GPIO_NUM_15)	// OUTPUT/INPUT (doesn't need physical pin)
 
 // GND // black1
 
@@ -73,7 +73,6 @@ static const char* TAG = "McGurk_Covox/DSS/StereoIn1-system";
 #define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 #define SAMPLE_RATE_DSS (14000)
 #define SAMPLE_RATE_COVOX (96000)
-//#define SAMPLE_RATE_COVOX (32000)
 
 #define CONVERT_GPIOREG_TO_SAMPLE(r) (uint8_t)((((r>>D0)&1)<<0) | (((r>>D1)&1)<<1) | (((r>>D2)&1)<<2) | (((r>>D3)&1)<<3) | (((r>>D4)&1)<<4) | (((r>>D5)&1)<<5) | (((r>>D6)&1)<<6) | (((r>>D7)&1)<<7))
 TaskHandle_t myTaskHandle = NULL;
@@ -98,6 +97,7 @@ volatile uint32_t mode_change_flag = 0;
 volatile uint32_t stereo_detect_count = 0;
 volatile uint32_t stereocount = 0;
 volatile uint8_t mode_flag = 0;
+volatile uint8_t mode_routine = 0;
 volatile uint32_t debug1 = 0;
 //volatile uint32_t debug2 = 0;
 
@@ -135,7 +135,7 @@ inline uint16_t get_sample_from_regvalue(uint32_t reg_value) {
 }
 
 void covox_routine(void) {
-//debug1 = 1;
+	mode_routine = COVOX;
 	while(1) {
 		register uint32_t a;
 		do {
@@ -157,7 +157,7 @@ void covox_routine(void) {
 }
 
 void dss_routine(void) {
-//debug1 = 2;
+	mode_routine = DSS;
 	while(1) {
 		register uint32_t a;
 		do {
@@ -175,10 +175,12 @@ void dss_routine(void) {
 }
 
 void stereo_routine(void) {
-//debug1 = 3;
+	mode_routine = STEREO;
 	while (1) {
 		uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
-		const uint32_t gpio_reg = 0x3FF4403C, mask = (1<<STEREO_CHANNEL_SELECT), endmask = (1<<GPIO_STEREO);
+		const uint32_t gpio_reg = 0x3FF4403C; 
+		const uint32_t mask = (1<<STEREO_CHANNEL_SELECT), endmask = (1<<GPIO_STEREO), endmaskinv = (1<<GPIO_STEREO_INV);
+		const uint32_t combmask = mask | endmask, combmaskinv = mask | endmaskinv;
 		const uint32_t left_ptr = (uint32_t)&left;
 		const uint32_t right_ptr = (uint32_t)&right;
 		#ifdef DEBUG
@@ -188,15 +190,27 @@ void stereo_routine(void) {
 			"loop1: \n"
 			//"memw \n"
 			"l32i.n	%[T1], %[GPIO], 0 \n" // read left channel
-			"bnone  %[T1], %[ENDMASK], end \n" // enable bit low, quit
-			"bnone	%[T1], %[MASK], loop1 \n" // if LOW, go back to start
+			//"bnone  %[T1], %[ENDMASK], end \n" // enable bit low, quit
+			//"bnone	%[T1], %[MASK], loop1 \n" // if LOW, go back to start
+			"bnone	%[T1], %[COMBMASKINV], loop1 \n" // if not stereo signal and enable_inv bit LOW, go back
 			" \n"
+			//"bany   %[T1], %[ENDMASK], end \n" // enable bit high (inverted), quit
 			"loop2: \n"
 			//"memw \n"
+
+			"loop3: \n"
+			"l32i.n	%[T3], %[GPIO], 0 \n"
+			"ball 	%[T3], %[MASK], loop3 \n"
+
 			"l32i.n	%[T2], %[GPIO], 0 \n" // read right channel
-			"bnone  %[T2], %[ENDMASK], end \n" // enable bit low, quit // maybe not needed? this is needed!
-			"bany 	%[T2], %[MASK], loop2 \n" // if HIGH, go back to start
+			//"bnone  %[T2], %[ENDMASK], end \n" // enable bit low, quit // maybe not needed? this is needed!
+			//"bany   %[T2], %[ENDMASK], end \n" // enable bit high(inverted), quit // maybe not needed? this is needed!
+			//"bany 	%[T2], %[MASK], loop2 \n" // if HIGH, go back to start
+			"ball 	%[T2], %[COMBMASK], loop2 \n" // if stereo signal and enable bit HIGH, go back
+
 			//"memw \n"
+			"bnone  %[T2], %[ENDMASK], end \n" // exit
+			"\n"
 			"s32i.n	%[T1], %[LEFT], 0 \n" // store left channel
 			//"memw \n"
 			"s32i.n	%[T2], %[RIGHT], 0 \n" // store right channel
@@ -210,7 +224,7 @@ void stereo_routine(void) {
 			"j loop1 \n"
 			"end: \n"
 			: [T1]"=&r" (temp_reg), [T2]"=&r" (temp_reg2), [T3]"=&r" (temp_reg3) \
-			: [GPIO]"a" (gpio_reg), [MASK]"a" (mask), [ENDMASK]"a" (endmask), [LEFT]"a" (left_ptr), [RIGHT]"a" (right_ptr) 
+			: [GPIO]"a" (gpio_reg), [MASK]"a" (mask), [ENDMASK]"a" (endmask), [COMBMASK]"a" (combmask), [COMBMASKINV]"a" (combmaskinv),[LEFT]"a" (left_ptr), [RIGHT]"a" (right_ptr) 
 			#ifdef DEBUG
 			, [COUNT]"a" (stereocount_ptr)
 			#endif
@@ -286,6 +300,7 @@ void change_mode(uint32_t new_mode) {
 		break;
 	case STEREO:
 		gpio_set_level(GPIO_STEREO, 0);
+		gpio_set_level(GPIO_STEREO_INV, 1);
 		gpio_isr_handler_remove(I2S_WS_IO);
 		break;
 	default:
@@ -319,6 +334,7 @@ void change_mode(uint32_t new_mode) {
 		i2s_channel_reconfig_std_clock(tx_handle, &std_cfg.clk_cfg);
 		gpio_isr_handler_add(I2S_WS_IO, isr_sample_stereo, NULL);
 		gpio_set_level(GPIO_STEREO, 1);
+		gpio_set_level(GPIO_STEREO_INV, 0);
 		break;
 	default:
 		break;
@@ -328,6 +344,7 @@ void change_mode(uint32_t new_mode) {
 	mode = new_mode;
 	mode_flag = 1;
 	ESP_LOGI(TAG, "New mode: %s", MODE_STRING[mode]);
+	if (mode_routine != mode) ESP_LOGW(TAG, "Routine mismatch! Running routine: %s", MODE_STRING[mode_routine]);
 }
 
 #define PIN_TO_INPUT(gpio_num) \
@@ -356,6 +373,12 @@ void app_main(void)
 	esp_err_t result;
 
 	ESP_LOGI(TAG, "Start");
+	#ifdef DEBUG
+	ESP_LOGI(TAG, "ESP_LOGI test");
+	ESP_LOGW(TAG, "ESP_LOGW test");
+	ESP_LOGE(TAG, "ESP_LOGE test");
+	#endif
+
 	//ESP_LOGI(TAG, "Compilaton date: %s, time: %s", __DATE__, __TIME__);
 	//ESP_LOGI(TAG, "ESP-IDF version: %s", IDF_VER);
 
@@ -372,7 +395,7 @@ void app_main(void)
 	ESP_LOGI(TAG, "Mode (Covox, DSS, Stereo):");
 	PIN_TO_OUTPUT(GPIO_COVOX);
 	PIN_TO_OUTPUT(GPIO_DSS);
-	PIN_TO_OUTPUT(GPIO_STEREO);
+	PIN_TO_OUTPUT(GPIO_STEREO); PIN_TO_OUTPUT(GPIO_STEREO_INV); gpio_set_level(GPIO_STEREO_INV, 1);
 	gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
 	gpio_hal_input_enable(&gpiohal, GPIO_COVOX);
 	gpio_hal_input_enable(&gpiohal, GPIO_DSS);
@@ -440,7 +463,7 @@ void app_main(void)
 			printf("esp_timer_get_time(): %u, ", newtime);
 			//printf("last_stereo: %u, ", newtime-last_stereo_signal);
 			//printf("last_dss: %u, ", newtime-last_dss_signal);
-			//printf("stereocount: %u, ", stereocount);
+			printf("stereocount: %u, ", stereocount);
 			//printf("mode: %u, ", mode);
 			printf("covox pin: %u, ", gpio_get_level(GPIO_COVOX));
 			printf("Mode: %s, ", MODE_STRING[mode]);
@@ -450,7 +473,8 @@ void app_main(void)
 			//printf("difference: %u, ", ((int)totalSamplesPlayed)-((int)totalSampleCounter));
 			//printf("difference: %i, ", ((int)totalSamplesPlayed)-((int)stereocount));
 			//printf("mode_flag: %u, ", mode_flag);
-			printf("debug1: %u, ", debug1);
+			//printf("debug1: %u, ", debug1);
+			printf("mode_routine: %u, ", mode_routine);
 			printf("\n");
 			oldtime += 1000000;
 		}
