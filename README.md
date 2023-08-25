@@ -7,32 +7,32 @@ Parallel/LPT-port soundcard using microcontroller. Supports Covox Speech Thing (
 - ESP32-PICO-KIT (if other ESP32 is used, modify pins)
 - I2S DAC (e.g. PCM5102A/GY-PCM5102 or I2S DAC amplifier MAX98357A)
 
-## Wiring
+## New wiring (ESP-IDF 5.1.1)
 
 ESP32 | LPT (D25)
 --- | ---
 **Covox:** |
-IO13 ⚪ | 2 (D0)
-IO14 🐺 | 3 (D1)
-IO27 🟡 | 4 (D2)
-IO26 🟤 | 5 (D3)
-IO9* 🔵 | 6 (D4)
-IO10* 🟣 | 7 (D5)
-IO18 🌸 | 8 (D6)
-IO23 🟢 | 9 (D7)
+IO18 🟤 | 2 (D0)
+IO19 🟠 | 3 (D1)
+IO27 🔵 | 4 (D2)
+IO21 🟢 | 5 (D3)
+IO22 🟡 | 6 (D4)
+IO23 🔴 | 7 (D5)
+IO13 🔘 | 8 (D6)
+IO14 🟣 | 9 (D7)
 GND ⚫ | GND (18-25)
 **DSS:** | 
-IO19 ⚪ | 17 (FIFOCLK) (Select Printer_) (PC->DSS)
-IO22 🐺 | 10 (FIFOFULL) (ACK) (DSS->PC)
+IO9 ⚪ | 17 (FIFOCLK) (Select Printer_) (PC->DSS)
+IO10 ⚫ | 10 (FIFOFULL) (ACK) (DSS->PC)
 **Stereo-In-1:** | 
-IO4 🟤 | 1 (Strobe_) (channel select PC->Covox)
+IO4 ⚪ | 1 (Strobe_) (channel select PC->Covox)
 &nbsp; | resistor between IO4 and 5V for external pullup (I have 2.15kohm, 4.7kohm might work too)
 **ESP32:** | **I2S DAC:**
 5V 🔴 | Vin (use 5V if possible, more stable)
 GND ⚫ | Ground
-IO5 🟤 | WCLK
-IO33 🟡 | BLCK
-IO32 🟢 | DATA
+IO25 🟢 | DATA
+IO32 🟡 | BLCK
+IO26 🟤 | WCLK (must be 0-31)
 GND | SCK (if GY-PCM5102)
 
 \* = IO9 and IO10 is only usable with ESP32-PICO-KIT (ESP32-PICO-D4) (with ESP32-WROOM-32 use 16 and 17)
@@ -125,33 +125,7 @@ SET DMP=-c12 -p378 -s30000 -q
 - PCM Music format is unsigned 8-bit PCM, and supports 11025, 22050 or 44100 Hz frequencies. 
 - With Covox: Convert ogg to raw in same samplerate as you are selected from fdsetup. Notice that this also affects to minimum memory requirements (whole raw-file must fit to memory at once)
 
-## New wiring (ESP-IDF 5.1.1)
 
-ESP32 | LPT (D25)
---- | ---
-**Covox:** |
-IO18 🟤 | 2 (D0)
-IO19 🟠 | 3 (D1)
-IO27 🔵 | 4 (D2)
-IO21 🟢 | 5 (D3)
-IO22 🟡 | 6 (D4)
-IO23 🔴 | 7 (D5)
-IO13 🔘 | 8 (D6)
-IO14 🟣 | 9 (D7)
-GND ⚫ | GND (18-25)
-**DSS:** | 
-IO9 ⚪ | 17 (FIFOCLK) (Select Printer_) (PC->DSS)
-IO10 ⚫ | 10 (FIFOFULL) (ACK) (DSS->PC)
-**Stereo-In-1:** | 
-IO4 ⚪ | 1 (Strobe_) (channel select PC->Covox)
-&nbsp; | resistor between IO4 and 5V for external pullup (I have 2.15kohm, 4.7kohm might work too)
-**ESP32:** | **I2S DAC:**
-5V 🔴 | Vin (use 5V if possible, more stable)
-GND ⚫ | Ground
-IO25 🟢 | DATA
-IO32 🟡 | BLCK
-IO26 🟤 | WCLK (must be 0-31)
-GND | SCK (if GY-PCM5102)
 
 ### Create utility to get LPT pin 17 (fifoclk) to low with DOS debug-command
 Press enter after every line (also when there is empty line).
