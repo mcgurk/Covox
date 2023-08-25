@@ -191,9 +191,13 @@ void stereo_routine(void) {
 			"l32i.n	%[T1], %[GPIO], 0 \n" // read left channel
 			"bnone	%[T1], %[COMBMASKINV], loop1 \n" // if not stereo signal and enable_inv bit LOW, go back
 			" \n"
-			"loop_bug: \n" // bug in ESP32 gpio hardware? sometimes it gives during one clock cycle "0" when it should give "1".
+			"loop_bug1: \n" // bug in ESP32 gpio hardware? sometimes it gives during one clock cycle "0" when it should give "1".
 			"l32i.n	%[T3], %[GPIO], 0 \n"
-			"ball 	%[T3], %[COMBMASK], loop_bug \n"
+			"ball 	%[T3], %[COMBMASK], loop_bug1 \n"
+			" \n"
+			"loop_bug2: \n" // bug in ESP32 gpio hardware? sometimes it gives during one clock cycle "0" when it should give "1".
+			"l32i.n	%[T3], %[GPIO], 0 \n"
+			"ball 	%[T3], %[COMBMASK], loop_bug2 \n"
 			" \n"
 			"loop2: \n"
 			"l32i.n	%[T2], %[GPIO], 0 \n" // read right channel
