@@ -68,7 +68,7 @@ Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
 
 /* Pin definition ends */
 
-static const char* TAG = "McGurk_Covox/DSS/StereoIn1-system";
+static const char* TAG = "McGurk-Covox/DSS/StereoIn1-system (MCDS)";
 
 #define SIZE_OF_DSS_BUF_IN_BYTES 256*4
 #define SAMPLE_RATE_DSS (14000)
@@ -178,7 +178,7 @@ void stereo_routine(void) {
 	mode_routine = STEREO;
 	while (1) {
 		uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
-		const uint32_t gpio_reg = 0x3FF4403C; 
+		//const uint32_t gpio_reg = GPIO_IN_REG; 
 		const uint32_t mask = (1<<STEREO_CHANNEL_SELECT), endmask = (1<<GPIO_STEREO), endmaskinv = (1<<GPIO_STEREO_INV);
 		const uint32_t combmask = mask | endmask, combmaskinv = mask | endmaskinv;
 		const uint32_t left_ptr = (uint32_t)&left;
@@ -191,7 +191,7 @@ void stereo_routine(void) {
 			"l32i.n	%[T1], %[GPIO], 0 \n" // read left channel
 			"bnone	%[T1], %[COMBMASKINV], loop1 \n" // if not stereo signal and enable_inv bit LOW, go back
 			" \n"
-			"loop_bug: \n" // bug in ESP32 gpio hardware? sometimes it gives one clock cycle "0" when it should give "1".
+			"loop_bug: \n" // bug in ESP32 gpio hardware? sometimes it gives during one clock cycle "0" when it should give "1".
 			"l32i.n	%[T3], %[GPIO], 0 \n"
 			"ball 	%[T3], %[COMBMASK], loop_bug \n"
 			" \n"
@@ -215,12 +215,11 @@ void stereo_routine(void) {
 			"j loop1 \n"
 			"end: \n"
 			: [T1]"=&r" (temp_reg), [T2]"=&r" (temp_reg2), [T3]"=&r" (temp_reg3) \
-			: [GPIO]"a" (gpio_reg), [MASK]"a" (mask), [ENDMASK]"a" (endmask), [COMBMASK]"a" (combmask), [COMBMASKINV]"a" (combmaskinv),[LEFT]"a" (left_ptr), [RIGHT]"a" (right_ptr) 
+			: [GPIO]"a" (GPIO_IN_REG), [MASK]"a" (mask), [ENDMASK]"a" (endmask), [COMBMASK]"a" (combmask), [COMBMASKINV]"a" (combmaskinv),[LEFT]"a" (left_ptr), [RIGHT]"a" (right_ptr) 
 			#ifdef DEBUG
 			, [COUNT]"a" (stereocount_ptr)
 			#endif
 		);
-		//debug1 = 1;
 		return;
 	}
 }
