@@ -98,7 +98,7 @@ volatile uint32_t stereo_detect_count = 0;
 volatile uint32_t stereocount = 0;
 volatile uint8_t mode_flag = 0;
 volatile uint8_t mode_routine = 0;
-volatile uint32_t debug1 = 0;
+//volatile uint32_t debug1 = 0;
 //volatile uint32_t debug2 = 0;
 
 i2s_chan_handle_t tx_handle;
@@ -188,29 +188,20 @@ void stereo_routine(void) {
 		#endif
 		__asm__ __volatile__(
 			"loop1: \n"
-			//"memw \n"
 			"l32i.n	%[T1], %[GPIO], 0 \n" // read left channel
-			//"bnone  %[T1], %[ENDMASK], end \n" // enable bit low, quit
-			//"bnone	%[T1], %[MASK], loop1 \n" // if LOW, go back to start
 			"bnone	%[T1], %[COMBMASKINV], loop1 \n" // if not stereo signal and enable_inv bit LOW, go back
 			" \n"
-			//"bany   %[T1], %[ENDMASK], end \n" // enable bit high (inverted), quit
-			"loop2: \n"
-			//"memw \n"
-
-			"loop3: \n"
+			"loop_bug: \n" // bug in ESP32 gpio hardware? sometimes it gives one clock cycle "0" when it should give "1".
 			"l32i.n	%[T3], %[GPIO], 0 \n"
-			"ball 	%[T3], %[MASK], loop3 \n"
-
+			"ball 	%[T3], %[COMBMASK], loop_bug \n"
+			" \n"
+			"loop2: \n"
 			"l32i.n	%[T2], %[GPIO], 0 \n" // read right channel
-			//"bnone  %[T2], %[ENDMASK], end \n" // enable bit low, quit // maybe not needed? this is needed!
-			//"bany   %[T2], %[ENDMASK], end \n" // enable bit high(inverted), quit // maybe not needed? this is needed!
-			//"bany 	%[T2], %[MASK], loop2 \n" // if HIGH, go back to start
 			"ball 	%[T2], %[COMBMASK], loop2 \n" // if stereo signal and enable bit HIGH, go back
-
-			//"memw \n"
+			" \n"
 			"bnone  %[T2], %[ENDMASK], end \n" // exit
 			"\n"
+			//"memw \n"
 			"s32i.n	%[T1], %[LEFT], 0 \n" // store left channel
 			//"memw \n"
 			"s32i.n	%[T2], %[RIGHT], 0 \n" // store right channel
@@ -229,8 +220,7 @@ void stereo_routine(void) {
 			, [COUNT]"a" (stereocount_ptr)
 			#endif
 		);
-		//totalSampleCounter++;
-		debug1 = 1;
+		//debug1 = 1;
 		return;
 	}
 }
@@ -308,7 +298,6 @@ void change_mode(uint32_t new_mode) {
 	}
 
 	// clean up
-	//for (int i = 0; i < sizeof(fifo_buf)/sizeof(uint32_t); i++) fifo_buf[i] = 0;
 	front = 0; back = 0;
 	totalSampleCounter = 0;
 	totalSamplesPlayed = 0;
@@ -319,8 +308,6 @@ void change_mode(uint32_t new_mode) {
 	case COVOX:
 		std_cfg.clk_cfg.sample_rate_hz = SAMPLE_RATE_COVOX;
 		i2s_channel_reconfig_std_clock(tx_handle, &std_cfg.clk_cfg);
-		//gpio_hal_context_t gpiohal; gpiohal.dev = GPIO_LL_GET_HW(GPIO_PORT_0);
-		//gpio_hal_input_enable(&gpiohal, I2S_WS_IO);
 		gpio_set_level(GPIO_COVOX, 1);
 		break;
 	case DSS:
@@ -401,7 +388,6 @@ void app_main(void)
 	gpio_hal_input_enable(&gpiohal, GPIO_DSS);
 	gpio_hal_input_enable(&gpiohal, GPIO_STEREO);
 
-	//printf("app_main running on core: %i\n", xPortGetCoreID());
 	ESP_LOGI(TAG, "'app_main' running on core: %i", xPortGetCoreID());
 	xTaskCreatePinnedToCore(core1_task, "Core1_Task", 4096, NULL,10, &myTaskHandle, 1);
 
