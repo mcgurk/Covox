@@ -88,20 +88,6 @@ GND | SCK (if GY-PCM5102)
 - https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
 - Problem in autodetection: after stereo player (iplay, dmp, crystal dreams) DSS-enable signal (LPT pin17) stays up. To get back to normal covox you have to start DSS-program or some other means drop DSS-enable signal down.
 
-#### Solve to Compaq Contura 430C (486, 100MHz) problem with stereo-in-1 (random crackling)
-- https://www.retrospace.net/download/Compaq%20LTE%20Elite%204-75CX%20Drivers%20and%20Utilities/
-  - sp1630.exe, "EPP Support Utility Version 2.00 Rev. A", eppbios.sys (copy EPPBIOS.SYS to C:\CPQDOS\)
-  - sp2158.exe, "Parallel Port Configuration 1.00 A", setport.exe (copy SETPORT.EXE to C:\CPQDOS\)
-
-config.sys:
-```
-DEVICEHIGH=C:\CPQDOS\EPPBIOS.SYS
-```
-autoexec.bat:
-```
-C:\CPQDOS\SETPORT.EXE 3
-```
-
 # Misc stuff
 
 ### DOSBox
