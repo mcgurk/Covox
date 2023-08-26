@@ -191,6 +191,13 @@ void stereo_routine(void) {
 			"l32i.n	%[T1], %[GPIO], 0 \n" // read left channel
 			"bnone	%[T1], %[COMBMASKINV], loop1 \n" // if not stereo signal and enable_inv bit LOW, go back
 			" \n"
+			/*"loop_bug1: \n"
+			"l32i.n	%[T3], %[GPIO], 0 \n" // filter out random 0's
+			"ball 	%[T3], %[COMBMASK], loop_bug1 \n" // if stereo signal goes 1 again, start over loop2
+			"loop_bug2: \n"
+			"l32i.n	%[T3], %[GPIO], 0 \n" 
+			"ball 	%[T3], %[COMBMASK], loop_bug2 \n"*/
+			" \n"
 			"loop2: \n"
 			"l32i.n	%[T2], %[GPIO], 0 \n" // read right channel
 			"ball 	%[T2], %[COMBMASK], loop2 \n" // if stereo signal and enable bit HIGH, go back
@@ -205,18 +212,18 @@ void stereo_routine(void) {
 			"ball 	%[T3], %[COMBMASK], loop2 \n"
 			" \n"
 			"bnone  %[T2], %[ENDMASK], end \n" // check if it is time to exit
-			"\n"
+			" \n"
 			//"memw \n"
 			"s32i.n	%[T1], %[LEFT], 0 \n" // store left channel
 			//"memw \n"
 			"s32i.n	%[T2], %[RIGHT], 0 \n" // store right channel
-			// ----
+			" \n"
 			#ifdef DEBUG
 			"l32i.n %[T1], %[COUNT], 0 \n" // inc stereocount
 			"addi %[T1], %[T1], 1 \n"
 			"s32i.n %[T1], %[COUNT], 0 \n"
 			#endif
-			// ----
+			" \n"
 			"j loop1 \n"
 			"end: \n"
 			: [T1]"=&r" (temp_reg), [T2]"=&r" (temp_reg2), [T3]"=&r" (temp_reg3) \
