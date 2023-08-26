@@ -1,8 +1,7 @@
 /*
-Covox/DSS/StereoIn1 implementation for ESP-IDF 5.0.2, ESP32-PICO-KIT and GY-PCM5102 by McGurk
+Covox/DSS/StereoIn1 implementation for ESP-IDF 5.1.1, ESP32-PICO-KIT and GY-PCM5102 by McGurk
 
 https://dl.espressif.com/dl/esp-idf/
-ESP-IDF v5.0.2 - Offline Installer (768MB) / esp-idf-tools-setup-offline-5.0.2.exe
 
 https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
 https://www.ti.com/lit/ds/symlink/pcm5102.pdf
@@ -17,6 +16,7 @@ Component config -> ESP System settings:
  Also watch CPU1 tick interrupt: off (default on)
  Watch CPU1 Idle Task: off (default on)
 Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
+Serial flasher config -> Flash size: 4MB
 */
 
 #include "freertos/FreeRTOS.h" // task.h
