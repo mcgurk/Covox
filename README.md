@@ -1,5 +1,5 @@
 
-# Covox, Disney Sound Source, Stereo-in-1
+# McGurk-Covox/DSS/StereoIn1-System (McDSS)
 Parallel/LPT-port soundcard using microcontroller. Supports Covox Speech Thing (aka Intersound MDO), Disney Sound Source (DSS) and Stereo-in-1 DAC.
 
 ## Parts
