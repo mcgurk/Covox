@@ -508,7 +508,7 @@ void app_main(void)
 
 }
 
-/* LPT port pin 17 (fifoclk) to low
+/* LPT port pin 17 (fifoclk / dss power on) to low
 debug
 n pin17.com
 a100
