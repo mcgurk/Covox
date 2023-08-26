@@ -16,7 +16,7 @@ Component config -> ESP System settings:
  Also watch CPU1 tick interrupt: off (default on)
  Watch CPU1 Idle Task: off (default on)
 Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
-Serial flasher config -> Flash size: 4MB
+Serial flasher config -> Flash size: 4MB (default 2MB)
 */
 
 #include "freertos/FreeRTOS.h" // task.h
