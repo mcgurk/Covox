@@ -54,7 +54,7 @@ GND | SCK (if GY-PCM5102)
 - LPT: https://www.epanorama.net/circuits/lptpower.html
 - LPT: https://www.edaboard.com/threads/parallel-port-max-current-sink-output.49356/
 
-## Covox / Covox Speech Thing / Intersound MDO / LPT DAC
+## Covox Speech Thing / Intersound MDO / LPT DAC
 - https://en.wikipedia.org/wiki/Covox_Speech_Thing
 - https://www.vgmpf.com/Wiki/index.php?title=Intersound_MDO
 - Covox supported games: https://www.mobygames.com/attributes/attribute/43/
