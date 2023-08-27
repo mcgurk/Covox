@@ -2,6 +2,8 @@
 # McGurk-Covox/DSS/StereoOn1-System (McDSS)
 Parallel/LPT-port soundcard using microcontroller. Supports Covox Speech Thing/Intersound MDO, Disney Sound Source (DSS) and Stereo-on-1 DAC.
 
+Thread at Vogons: https://www.vogons.org/viewtopic.php?f=62&t=93225
+
 ## Parts
 
 - ESP32-PICO-KIT (if other ESP32 is used, modify pins)
