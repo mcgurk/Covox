@@ -50,13 +50,15 @@ GND | SCK (if GY-PCM5102)
 - Xtensa® Instruction Set Architecture (ISA) Reference Manual: https://0x04.net/~mwk/doc/xtensa.pdf
 - https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
 - PCM5102: https://www.ti.com/lit/ds/symlink/pcm5100a.pdf
-- Covox supported games: https://www.mobygames.com/attributes/attribute/43/
 - DSS/Covox exclusive games? https://www.vogons.org/viewtopic.php?t=57885
 - LPT: https://www.epanorama.net/circuits/lptpower.html
 - LPT: https://www.edaboard.com/threads/parallel-port-max-current-sink-output.49356/
 
+## Covox / Covox Speech Thing / Intersound MDO
+- Covox supported games: https://www.mobygames.com/attributes/attribute/43/
 
-## Disney Sound Source (DSS) / Intersound MDO
+  
+## Disney Sound Source (DSS)
 
 #### ESP32
 - Cannot use interrupts, they are too slow. Dedicate another core for bitbanging FIFOCLK signal.
