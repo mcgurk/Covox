@@ -95,6 +95,7 @@ GND | SCK (if GY-PCM5102)
 - https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
 - Problem in autodetection: after stereo player (iplay, dmp, crystal dreams) DSS-enable signal (LPT pin17) stays up. To get back to normal covox you have to start DSS-program or some other means drop DSS-enable signal down.
 - Covox in Stereo on one LPT Port - LPTSND X2 (Prototype): https://www.vogons.org/viewtopic.php?t=83891
+- Problem with ESP32 GPIO reading: https://github.com/espressif/arduino-esp32/issues/4172
 
 # Misc stuff
 
