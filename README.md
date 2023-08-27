@@ -32,7 +32,7 @@ IO4 ⚪ | 1 (Strobe_) (channel select PC->Covox)
 GND ⚫ | Ground
 IO25 🟢 | DATA
 IO32 🟡 | BLCK
-IO26 🟤 | WCLK (must be 0-31)
+IO26 🟤 | WCLK (must be GPIO 0-31)
 GND | SCK (if GY-PCM5102)
 
 \* = IO9 and IO10 is only usable with ESP32-PICO-KIT (ESP32-PICO-D4) (with ESP32-WROOM-32 use 16 and 17)
