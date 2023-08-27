@@ -44,7 +44,6 @@ GND | SCK (if GY-PCM5102)
 - https://www.mischianti.org/wp-content/uploads/2021/07/ESP32-DEV-KIT-DevKitC-v4-pinout-mischianti.png
 - https://docs.espressif.com/projects/esp-idf/en/latest/esp32/_images/esp32-pico-kit-v4-pinout.png
 - https://europe1.discourse-cdn.com/arduino/optimized/4X/2/3/1/2319cb54d8691ab1d1ba749b7992710217dcacf2_2_500x500.jpeg
-- Covox supported games: https://www.mobygames.com/attribute/sheet/attributeId,43/p,2/
 - Adafruit Mono 2.5W Class D Audio Amplifier - PAM8302: https://www.adafruit.com/product/2130
 - ESP32 DAC: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/dac.html
 - Xtensa® Instruction Set Architecture (ISA) Reference Manual: https://0x04.net/~mwk/doc/xtensa.pdf
