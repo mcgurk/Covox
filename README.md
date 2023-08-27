@@ -118,7 +118,7 @@ SET DMP=-c12 -p378 -s30000 -q
 
 
 
-### Create utility to get LPT pin 17 (fifoclk) to low with DOS debug-command
+### Create utility to get LPT pin 17 (fifoclk / dss power on) to low with DOS debug-command
 Press enter after every line (also when there is empty line).
 ```
 C:\>debug
