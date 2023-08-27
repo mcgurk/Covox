@@ -1,6 +1,6 @@
 
-# McGurk-Covox/DSS/StereoIn1-System (McDSS)
-Parallel/LPT-port soundcard using microcontroller. Supports Covox Speech Thing/Intersound MDO, Disney Sound Source (DSS) and Stereo-in-1 DAC.
+# McGurk-Covox/DSS/StereoOn1-System (McDSS)
+Parallel/LPT-port soundcard using microcontroller. Supports Covox Speech Thing/Intersound MDO, Disney Sound Source (DSS) and Stereo-on-1 DAC.
 
 ## Parts
 
@@ -82,7 +82,7 @@ GND | SCK (if GY-PCM5102)
 - Wolfenstein 3D: writes 32 samples to FIFO and checks that FIFOFULL pin activates
 - Commander Keen in Keen Dreams (KDreams): v1.0 detects DSS. 33 sample interrupts comes trough. Notice: DSS is not actually supported at all in the game.
 
-## Stereo-in-1
+## Stereo-on-1
 - 2,15kohm between gpio and 5V. Channelselect signal is very fast (weak) and pullup is crucial for operation. 
 - Crystal Dream by Triton: https://www.pouet.net/prod.php?which=463 (LPT pin 1)
 - Inertia Player 1.22: https://www.pouet.net/prod.php?which=29208
