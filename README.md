@@ -56,7 +56,7 @@ GND | SCK (if GY-PCM5102)
 - LPT: https://www.edaboard.com/threads/parallel-port-max-current-sink-output.49356/
 
 
-## Disney Sound Source / DSS
+## Disney Sound Source (DSS) / Intersound MDO
 
 #### ESP32
 - Cannot use interrupts, they are too slow. Dedicate another core for bitbanging FIFOCLK signal.
