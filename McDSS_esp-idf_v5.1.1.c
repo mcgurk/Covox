@@ -96,7 +96,7 @@ volatile uint32_t last_stereo_signal = 0;
 volatile uint32_t mode_change_flag = 0;
 volatile uint32_t stereo_detect_count = 0;
 volatile uint32_t stereocount = 0;
-volatile uint8_t mode_flag = 0;
+volatile uint8_t mode_flag = 1; // normally 0, but 1 if mode has just changed
 volatile uint8_t mode_routine = 0;
 //volatile uint32_t debug1 = 0;
 //volatile uint32_t debug2 = 0;
@@ -128,8 +128,7 @@ inline uint16_t get_sample_from_regvalue(uint32_t reg_value) __attribute__((alwa
 
 inline uint16_t get_sample_from_regvalue(uint32_t reg_value) {
 	uint8_t sample = CONVERT_GPIOREG_TO_SAMPLE(reg_value);
-	if ( mode_flag == 0 ) return ( (sample - 128) << VOLUME );
-	if ( sample == 0 ) return 0;
+	if ( (mode_flag == 1) && (sample == 0x00) ) return 0;
 	mode_flag = 0;
 	return ( (sample - 128) << VOLUME );
 }
@@ -247,6 +246,24 @@ void core1_task( void * pvParameters ) {
 	}
 }
 
+void IRAM_ATTR isr_dssfifo() {
+	static uint32_t out = 0;
+	uint16_t i = totalSampleCounter & 255;
+	if (i&1) { // read new "out" only every other time
+		if (fcnt > 0) {
+			uint32_t reg = fifo_buf[front++];
+			uint16_t s = (CONVERT_GPIOREG_TO_SAMPLE(reg)-128) << VOLUME;
+			//uint16_t s = get_sample_from_regvalue(reg);
+			out = (s << 16) | s;
+		} else out = 0; // if buffer is empty, use zero sample
+		if (fcnt < 16) GPIO.out_w1tc = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, LOW);
+	}
+	buf[i] = out;
+	if (i == 127) buffer_full = 1;
+	if (i == 255) buffer_full = 2;
+	totalSampleCounter++;
+}
+
 void IRAM_ATTR isr_sample_stereo() {
 	uint32_t l = left, r = right;
 	uint16_t out_left = get_sample_from_regvalue(l);
@@ -258,30 +275,13 @@ void IRAM_ATTR isr_sample_stereo() {
 	totalSampleCounter++;
 }
 
-void IRAM_ATTR isr_dssfifo() {
-	static uint32_t out = 0;
-	uint16_t i = totalSampleCounter & 255;
-	if (i&1) { // read new "out" only every other time
-		if (fcnt > 0) {
-			uint32_t reg = fifo_buf[front++];
-			uint16_t s = (CONVERT_GPIOREG_TO_SAMPLE(reg)-128) << VOLUME;
-			out = (s << 16) | s;
-		} else out = 0;
-		if (fcnt < 16) GPIO.out_w1tc = ((uint32_t)1 << FIFOFULL); //digitalWrite(FIFOFULL, LOW);
-	}
-	buf[i] = out;
-	if (i == 127) buffer_full = 1;
-	if (i == 255) buffer_full = 2;
-	totalSampleCounter++;
+void IRAM_ATTR isr_dss_detect() {
+	if ( !(REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) last_dss_signal = esp_timer_get_time();
 }
 
 void IRAM_ATTR isr_stereo_detect() {
 	last_stereo_signal = esp_timer_get_time();
 	stereo_detect_count++;
-}
-
-void IRAM_ATTR isr_dss_detect() {
-	if ( !(REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) last_dss_signal = esp_timer_get_time();
 }
 
 void change_mode(uint32_t new_mode) {
@@ -314,6 +314,9 @@ void change_mode(uint32_t new_mode) {
 	totalSamplesPlayed = 0;
 	stereocount = 0;
 	buffer_full = 0;
+	stereo_detect_count = 0;
+
+	mode_flag = 1;
 
 	switch (new_mode) {
 	case COVOX:
@@ -340,7 +343,6 @@ void change_mode(uint32_t new_mode) {
 
 	i2s_channel_enable(tx_handle);
 	mode = new_mode;
-	mode_flag = 1;
 	ESP_LOGI(TAG, "New mode: %s", MODE_STRING[mode]);
 	if (mode_routine != mode) ESP_LOGW(TAG, "Routine mismatch! Running routine: %s", MODE_STRING[mode_routine]);
 }
@@ -454,7 +456,6 @@ void app_main(void)
 			//printf("main core: %i, cpu speed: %u, cycles: %u, ",xPortGetCoreID(), conf.freq_mhz, xthal_get_ccount());
 			//printf("main core: %i, cpu speed: %u, ",xPortGetCoreID(), conf.freq_mhz);
 			//printf("cpu speed: %u, ", (unsigned int)conf.freq_mhz);
-			//printf("BOOL_COVOX: %u, ", BOOL_COVOX);
 			//printf("stereocount: %u, ", stereocount);
 			//printf("FIFOCLK: %u, ", (REG_READ(GPIO_IN_REG)>>FIFOCLK)&1);
 			printf("esp_timer_get_time(): %u, ", newtime);
@@ -481,27 +482,35 @@ void app_main(void)
 			change_mode(mode_change_flag);
 			mode_change_flag = NONE;
 		}
-		if (mode == STEREO) {
+		if (mode == STEREO) { // check when to stop STEREO-mode:
 			uint32_t last = last_stereo_signal;
 			uint32_t now = esp_timer_get_time();
-			if ((now - last) > 1000000L) {
+			if ((now - last) > 1000000L) { // if STEREO_CHANNEL_SELECT has been down 1,0s, change back to covox
 				change_mode(COVOX);
 			}
 		}
-		static uint32_t stereooldtime = 0, stereonewtime = 0;
+		if (mode != STEREO) { // check when to start STEREO-mode:
+			uint32_t last = last_stereo_signal;
+			uint32_t now = esp_timer_get_time();
+			if ((now - last) > 1000000L) { // if STEREO_CHANNEL_SELECT has been down 1,0s, reset stereo_detect_count
+				stereo_detect_count = 0;
+			}
+			if ( stereo_detect_count > 100 ) change_mode(STEREO); // if we got 100 STEREO_CHANNEL_SELECT signals during 1,0s, change to STEREO-mode
+		}
+		/*static uint32_t stereooldtime = 0, stereonewtime = 0; //check when to start STEREO-mode:
 		stereonewtime = esp_timer_get_time();
 		if ( (stereonewtime - stereooldtime) < 2000000000L ) {
 			if ( stereo_detect_count > 500 ) change_mode(STEREO); //100000, 30khz, > 3000
 			stereooldtime += 100000; //400000, duke3d < 500
 			stereo_detect_count = 0;
-		}
-		if ( (mode == DSS) && !(REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) {
+		}*/
+		if ( (mode == DSS) && !(REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) { // check when to stop DSS-mode:
 			uint32_t last = last_dss_signal; // time when last falling edge happened
 			uint32_t now = esp_timer_get_time();
-			if ((now - last) > 100000L) // if FIFOCLK has been down 0,1s
+			if ((now - last) > 100000L) // if FIFOCLK has been down 0,1s, change back to covox
 				change_mode(COVOX);
 		}
-		if ( (mode != STEREO) && (REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) change_mode(DSS);
+		if ( (mode != STEREO) && (REG_READ(GPIO_IN_REG)&(1<<FIFOCLK)) ) change_mode(DSS); // check when to start DSS-mode:
 
 		vTaskDelay(1);
 	}
