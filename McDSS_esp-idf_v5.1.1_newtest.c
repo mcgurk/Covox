@@ -133,7 +133,7 @@ inline uint16_t get_sample_from_regvalue(uint32_t reg_value) {
 	return ( (sample - 128) << VOLUME );
 }
 
-void covox_routine(void) {
+void IRAM_ATTR covox_routine(void) {
 	mode_routine = COVOX;
 	while(1) {
 		register uint32_t a;
@@ -155,7 +155,7 @@ void covox_routine(void) {
 	}
 }
 
-void dss_routine(void) {
+void IRAM_ATTR dss_routine(void) {
 	mode_routine = DSS;
 	while(1) {
 		register uint32_t a;
@@ -173,17 +173,17 @@ void dss_routine(void) {
 	}
 }
 
-void stereo_routine(void) {
+void IRAM_ATTR stereo_routine(void) {
 	mode_routine = STEREO;
 	while (1) {
 		uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
 		//const uint32_t gpio_reg = GPIO_IN_REG; 
-		const uint32_t mask = (1<<STEREO_CHANNEL_SELECT), endmask = (1<<GPIO_STEREO), endmaskinv = (1<<GPIO_STEREO_INV);
-		const uint32_t combmask = mask | endmask, combmaskinv = mask | endmaskinv;
-		const uint32_t left_ptr = (uint32_t)&left;
-		const uint32_t right_ptr = (uint32_t)&right;
+		const DRAM_ATTR uint32_t mask = (1<<STEREO_CHANNEL_SELECT), endmask = (1<<GPIO_STEREO), endmaskinv = (1<<GPIO_STEREO_INV);
+		const DRAM_ATTR uint32_t combmask = mask | endmask, combmaskinv = mask | endmaskinv;
+		const DRAM_ATTR uint32_t left_ptr = (uint32_t)&left;
+		const DRAM_ATTR uint32_t right_ptr = (uint32_t)&right;
 		#ifdef DEBUG
-		const uint32_t stereocount_ptr = (uint32_t)&stereocount;
+		const DRAM_ATTR uint32_t stereocount_ptr = (uint32_t)&stereocount;
 		#endif
 		__asm__ __volatile__(
 			"loop1: \n"
