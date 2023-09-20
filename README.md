@@ -50,6 +50,7 @@ GND | SCK (if GY-PCM5102)
 - ESP32 DAC: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/dac.html
 - Xtensa® Instruction Set Architecture (ISA) Reference Manual: https://0x04.net/~mwk/doc/xtensa.pdf
 - Is ESP32 5v tolerant? https://voodoo.business/2021/05/19/are-the-esp32-and-esp8266-5v-tolerant-yes-they-officially-are/
+- https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/memory-types.html
 - https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
 - PCM5102: https://www.ti.com/lit/ds/symlink/pcm5100a.pdf
 - DSS/Covox exclusive games? https://www.vogons.org/viewtopic.php?t=57885
