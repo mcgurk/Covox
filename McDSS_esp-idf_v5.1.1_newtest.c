@@ -178,10 +178,10 @@ void IRAM_ATTR stereo_routine(void) {
 	while (1) {
 		uint32_t temp_reg = 0, temp_reg2 = 0, temp_reg3 = 0;
 		//const uint32_t gpio_reg = GPIO_IN_REG; 
-		const DRAM_ATTR uint32_t mask = (1<<STEREO_CHANNEL_SELECT), endmask = (1<<GPIO_STEREO), endmaskinv = (1<<GPIO_STEREO_INV);
-		const DRAM_ATTR uint32_t combmask = mask | endmask, combmaskinv = mask | endmaskinv;
-		const DRAM_ATTR uint32_t left_ptr = (uint32_t)&left;
-		const DRAM_ATTR uint32_t right_ptr = (uint32_t)&right;
+		const static DRAM_ATTR uint32_t mask = (1<<STEREO_CHANNEL_SELECT), endmask = (1<<GPIO_STEREO), endmaskinv = (1<<GPIO_STEREO_INV);
+		const static DRAM_ATTR uint32_t combmask = mask | endmask, combmaskinv = mask | endmaskinv;
+		const static DRAM_ATTR uint32_t left_ptr = (uint32_t)&left;
+		const static DRAM_ATTR uint32_t right_ptr = (uint32_t)&right;
 		#ifdef DEBUG
 		const DRAM_ATTR uint32_t stereocount_ptr = (uint32_t)&stereocount;
 		#endif
