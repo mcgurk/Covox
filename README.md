@@ -103,7 +103,7 @@ Looks like zeropoint is 128 (0x80). Tested with Hocus Pocus (Covox) and Wolfenst
 - My Covox (Stereo-On-1) LPT Stereo DAC - home made sound card: https://www.vogons.org/viewtopic.php?t=30139
 - Covox in Stereo on one LPT Port - LPTSND X2 (Prototype): https://www.vogons.org/viewtopic.php?t=83891
 - Problem with ESP32 GPIO reading: https://github.com/espressif/arduino-esp32/issues/4172
-- Compaq Contura 430C 486 100MHz doesn't work with default LPT bios-settings. Set LPT port to EPP in bios settings to get Stereo-on-1 to work.
+- Compaq Contura 430C (486@100MHz) doesn't work with default LPT bios-settings. Set LPT port to EPP in bios settings to get Stereo-on-1 to work.
 
 # Misc stuff
 
