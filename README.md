@@ -39,6 +39,15 @@ GND | SCK (if GY-PCM5102)
 
 \* = IO9 and IO10 is only usable with ESP32-PICO-KIT (ESP32-PICO-D4) (with ESP32-WROOM-32 use 16 and 17)
 
+## ESP-IDF settings
+```
+Component config -> ESP System settings:
+ CPU frequency: 240MHz (default: 160MHz)
+ Also watch CPU1 tick interrupt: off (default on)
+ Watch CPU1 Idle Task: off (default on)
+Component config -> FreeRTOS -> Tick rate: 1000 (default 100)
+```
+
 ## Links
 - https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
 - https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
