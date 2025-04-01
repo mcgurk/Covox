@@ -1,3 +1,4 @@
+(update 31.3.2025: "McDSS_esp-idf_v5.1.1.c" works with ESP-IDF v5.4)
 
 # McGurk-Covox/DSS/StereoOn1-System (McDSS)
 Parallel/LPT-port soundcard using microcontroller. Supports Covox Speech Thing/Intersound MDO, Disney Sound Source (DSS) and Stereo-on-1 DAC.
